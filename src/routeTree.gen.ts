@@ -10,13 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DisplayLayoutRouteImport } from './routes/display/_layout'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminLayoutRouteImport } from './routes/admin/_layout'
+import { Route as DisplayLayoutIndexRouteImport } from './routes/display/_layout/index'
+import { Route as DisplayLayoutTimerIdRouteImport } from './routes/display/_layout/$timerId'
 import { Route as AdminLayoutTimersIndexRouteImport } from './routes/admin/_layout/timers/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DisplayLayoutRoute = DisplayLayoutRouteImport.update({
+  id: '/display/_layout',
+  path: '/display',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
@@ -29,6 +37,16 @@ const AdminLayoutRoute = AdminLayoutRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DisplayLayoutIndexRoute = DisplayLayoutIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DisplayLayoutRoute,
+} as any)
+const DisplayLayoutTimerIdRoute = DisplayLayoutTimerIdRouteImport.update({
+  id: '/$timerId',
+  path: '/$timerId',
+  getParentRoute: () => DisplayLayoutRoute,
+} as any)
 const AdminLayoutTimersIndexRoute = AdminLayoutTimersIndexRouteImport.update({
   id: '/timers/',
   path: '/timers/',
@@ -39,12 +57,17 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminLayoutRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
+  '/display': typeof DisplayLayoutRouteWithChildren
+  '/display/$timerId': typeof DisplayLayoutTimerIdRoute
+  '/display/': typeof DisplayLayoutIndexRoute
   '/admin/timers/': typeof AdminLayoutTimersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminLayoutRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
+  '/display/$timerId': typeof DisplayLayoutTimerIdRoute
+  '/display': typeof DisplayLayoutIndexRoute
   '/admin/timers': typeof AdminLayoutTimersIndexRoute
 }
 export interface FileRoutesById {
@@ -52,18 +75,37 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin/_layout': typeof AdminLayoutRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
+  '/display/_layout': typeof DisplayLayoutRouteWithChildren
+  '/display/_layout/$timerId': typeof DisplayLayoutTimerIdRoute
+  '/display/_layout/': typeof DisplayLayoutIndexRoute
   '/admin/_layout/timers/': typeof AdminLayoutTimersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/admin/login' | '/admin/timers/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/admin/login'
+    | '/display'
+    | '/display/$timerId'
+    | '/display/'
+    | '/admin/timers/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/admin/login' | '/admin/timers'
+  to:
+    | '/'
+    | '/admin'
+    | '/admin/login'
+    | '/display/$timerId'
+    | '/display'
+    | '/admin/timers'
   id:
     | '__root__'
     | '/'
     | '/admin/_layout'
     | '/admin/login'
+    | '/display/_layout'
+    | '/display/_layout/$timerId'
+    | '/display/_layout/'
     | '/admin/_layout/timers/'
   fileRoutesById: FileRoutesById
 }
@@ -71,6 +113,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminLayoutRoute: typeof AdminLayoutRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
+  DisplayLayoutRoute: typeof DisplayLayoutRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -80,6 +123,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/display/_layout': {
+      id: '/display/_layout'
+      path: '/display'
+      fullPath: '/display'
+      preLoaderRoute: typeof DisplayLayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/login': {
@@ -95,6 +145,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin'
       preLoaderRoute: typeof AdminLayoutRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/display/_layout/': {
+      id: '/display/_layout/'
+      path: '/'
+      fullPath: '/display/'
+      preLoaderRoute: typeof DisplayLayoutIndexRouteImport
+      parentRoute: typeof DisplayLayoutRoute
+    }
+    '/display/_layout/$timerId': {
+      id: '/display/_layout/$timerId'
+      path: '/$timerId'
+      fullPath: '/display/$timerId'
+      preLoaderRoute: typeof DisplayLayoutTimerIdRouteImport
+      parentRoute: typeof DisplayLayoutRoute
     }
     '/admin/_layout/timers/': {
       id: '/admin/_layout/timers/'
@@ -118,10 +182,25 @@ const AdminLayoutRouteWithChildren = AdminLayoutRoute._addFileChildren(
   AdminLayoutRouteChildren,
 )
 
+interface DisplayLayoutRouteChildren {
+  DisplayLayoutTimerIdRoute: typeof DisplayLayoutTimerIdRoute
+  DisplayLayoutIndexRoute: typeof DisplayLayoutIndexRoute
+}
+
+const DisplayLayoutRouteChildren: DisplayLayoutRouteChildren = {
+  DisplayLayoutTimerIdRoute: DisplayLayoutTimerIdRoute,
+  DisplayLayoutIndexRoute: DisplayLayoutIndexRoute,
+}
+
+const DisplayLayoutRouteWithChildren = DisplayLayoutRoute._addFileChildren(
+  DisplayLayoutRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminLayoutRoute: AdminLayoutRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
+  DisplayLayoutRoute: DisplayLayoutRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

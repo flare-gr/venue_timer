@@ -19,7 +19,10 @@
       "PowerShell(Get-ChildItem -Path \"E:\\\\CodeLab\\\\venue_timer\" -Recurse | Select-Object FullName | ForEach-Object { $_.FullName })",
       "Bash(grep -r \"token\" \"E:/CodeLab/venue_timer_backend\" --include=\"*.py\" ! -path \"*/.venv/*\" ! -path \"*/.pytest_cache/*\" ! -path \"*/.idea/*\")",
       "Bash(npx vite *)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(dir *)",
+      "Bash(Select-Object -Property Name, FullName)",
+      "Bash(npx eslint *)"
     ]
   }
 }

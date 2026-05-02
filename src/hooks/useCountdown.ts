@@ -18,16 +18,23 @@ function formatMs(ms: number): string {
 export function useCountdown(
   timer: Timer,
   skewRef: RefObject<number>,
-): { display: string; isOvertime: boolean } {
+): { display: string; isOvertime: boolean; remainingMs: number } {
   const [rafDisplay, setRafDisplay] = useState<string>('00:00')
+  const [rafRemainingMs, setRafRemainingMs] = useState<number>(0)
   const [isOvertime, setIsOvertime] = useState(false)
   const rafId = useRef<number>(0)
 
   // Derive static display values without touching state in effects
-  const staticDisplay = useMemo(() => {
-    if (timer.state === 'idle') return formatMs(timer.duration * 1000)
-    if (timer.state === 'paused') return formatMs(timer.paused_remaining ?? 0)
-    return null
+  const { staticDisplay, staticRemainingMs } = useMemo(() => {
+    if (timer.state === 'idle') {
+      const ms = timer.duration * 1000
+      return { staticDisplay: formatMs(ms), staticRemainingMs: ms }
+    }
+    if (timer.state === 'paused') {
+      const ms = timer.paused_remaining ?? 0
+      return { staticDisplay: formatMs(ms), staticRemainingMs: ms }
+    }
+    return { staticDisplay: null, staticRemainingMs: null }
   }, [timer.state, timer.duration, timer.paused_remaining])
 
   useEffect(() => {
@@ -44,6 +51,7 @@ export function useCountdown(
     const tick = () => {
       const remaining = endMs - (Date.now() + skewRef.current)
       setRafDisplay(formatMs(remaining))
+      setRafRemainingMs(remaining)
       setIsOvertime(remaining < 0)
       rafId.current = requestAnimationFrame(tick)
     }
@@ -53,6 +61,7 @@ export function useCountdown(
 
   const display = staticDisplay ?? rafDisplay
   const overtime = staticDisplay !== null ? false : isOvertime
+  const remainingMs = staticRemainingMs ?? rafRemainingMs
 
-  return { display, isOvertime: overtime }
+  return { display, isOvertime: overtime, remainingMs }
 }
