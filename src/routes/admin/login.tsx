@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../services/auth'
 import { authService } from '../../services/auth'
+import { applyAdminTheme, clearAdminTheme } from '../../utils/adminTheme'
 
 export const Route = createFileRoute('/admin/login')({
   component: LoginPage,
@@ -17,13 +18,11 @@ function LoginPage() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    document.documentElement.dataset.theme = 'rehearsal'
+    applyAdminTheme('light')
     if (authService.isAuthenticated()) {
       void navigate({ to: '/admin/timers' })
     }
-    return () => {
-      delete document.documentElement.dataset.theme
-    }
+    return () => clearAdminTheme()
   }, [navigate])
 
   async function handleSubmit(e: React.FormEvent) {

@@ -24,7 +24,7 @@
 }
 
 /* Rehearsal (light) theme — admin routes */
-[data-theme="rehearsal"] {
+html[data-theme="rehearsal"] {
   --color-cue-base:    #EEF5FF;
   --color-cue-surface: #FFFFFF;
   --color-cue-border:  #B8CCE4;

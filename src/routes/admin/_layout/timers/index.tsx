@@ -1,11 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useApi } from '../../../services/api'
-import { TimerCard } from '../../../components/admin/TimerCard'
-import { CreateTimerForm } from '../../../components/admin/CreateTimerForm'
+import { useApi } from '../../../../services/api'
+import { TimerCard } from '../../../../components/admin/TimerCard'
+import { CreateTimerForm } from '../../../../components/admin/CreateTimerForm'
 
-export const Route = createFileRoute('/admin/timers/')({
+export const Route = createFileRoute('/admin/_layout/timers/')({
   component: TimersPage,
 })
 
