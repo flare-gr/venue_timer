@@ -12,7 +12,10 @@
       "Bash(Select-Object Name, PSIsContainer)",
       "Bash(dir \"E:\\\\CodeLab\\\\venue_timer_backend\")",
       "Bash(xargs grep *)",
-      "Bash(Select-String \"urls|views|serializer\")"
+      "Bash(Select-String \"urls|views|serializer\")",
+      "Bash(Select-Object -Property FullName, PSIsContainer)",
+      "PowerShell(tree E:\\\\CodeLab\\\\venue_timer\\\\src /f)",
+      "PowerShell(Get-ChildItem -Path \"E:\\\\CodeLab\\\\venue_timer\\\\src\" -Recurse | ForEach-Object { $_.FullName })"
     ]
   }
 }
