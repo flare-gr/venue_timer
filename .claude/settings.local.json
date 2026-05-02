@@ -8,7 +8,11 @@
       "Bash(Select-Object FullName)",
       "Bash(findstr *)",
       "Bash(npm install *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "Bash(dir \"E:\\\\CodeLab\\\\venue_timer_backend\")",
+      "Bash(xargs grep *)",
+      "Bash(Select-String \"urls|views|serializer\")"
     ]
   }
 }
