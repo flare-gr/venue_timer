@@ -15,7 +15,11 @@
       "Bash(Select-String \"urls|views|serializer\")",
       "Bash(Select-Object -Property FullName, PSIsContainer)",
       "PowerShell(tree E:\\\\CodeLab\\\\venue_timer\\\\src /f)",
-      "PowerShell(Get-ChildItem -Path \"E:\\\\CodeLab\\\\venue_timer\\\\src\" -Recurse | ForEach-Object { $_.FullName })"
+      "PowerShell(Get-ChildItem -Path \"E:\\\\CodeLab\\\\venue_timer\\\\src\" -Recurse | ForEach-Object { $_.FullName })",
+      "PowerShell(Get-ChildItem -Path \"E:\\\\CodeLab\\\\venue_timer\" -Recurse | Select-Object FullName | ForEach-Object { $_.FullName })",
+      "Bash(grep -r \"token\" \"E:/CodeLab/venue_timer_backend\" --include=\"*.py\" ! -path \"*/.venv/*\" ! -path \"*/.pytest_cache/*\" ! -path \"*/.idea/*\")",
+      "Bash(npx vite *)",
+      "Bash(npx tsc *)"
     ]
   }
 }

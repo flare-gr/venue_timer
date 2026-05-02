@@ -4,7 +4,9 @@ import axios, {
 } from 'axios'
 import { tokenStorage } from './tokenStorage'
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'
+import { config } from '../../config'
+
+const BASE_URL = config.apiBaseUrl
 
 interface RetryConfig extends InternalAxiosRequestConfig {
   _retry?: boolean
