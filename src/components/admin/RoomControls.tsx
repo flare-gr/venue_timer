@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { useApi } from '../../services/api'
-import type { Room, Timer } from '../../services/api'
+import type { Room, RoomUpdatePayload, Timer } from '../../services/api'
 import { useRoomSocket } from '../../hooks/useRoomSocket'
 import { useCountdown } from '../../hooks/useCountdown'
 import { TimerStateBadge, RoomStateBadge } from './StateBadge'
@@ -141,6 +141,12 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
   async function handleEmergencyBlur() {
     if (emergencyText === room.emergency_text) return
     const updated = await api.rooms.emergency(room.id, { text: emergencyText, active: room.emergency_active })
+    setRoom(updated)
+    onMutated()
+  }
+
+  async function patchRoomField(payload: RoomUpdatePayload) {
+    const updated = await api.rooms.patch(room.id, payload)
     setRoom(updated)
     onMutated()
   }
@@ -395,6 +401,80 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
             placeholder="Emergency message…"
             className="w-full rounded border border-[#FF2040]/30 bg-cue-base px-2 py-1.5 font-mono text-sm text-cue-primary placeholder:text-[#FF2040]/40 focus:border-[#FF2040] focus:outline-none transition-colors duration-[120ms]"
           />
+        </div>
+      </div>
+
+      {/* Display chrome */}
+      <div className="rounded-lg border border-cue-border bg-cue-surface p-4 shadow-sm">
+        <div className="mb-3 flex items-center justify-between">
+          <span className="font-mono text-[10px] font-semibold tracking-widest text-cue-muted uppercase">
+            Display Chrome
+          </span>
+        </div>
+
+        <div className="mb-3 flex items-center justify-between rounded border border-cue-accent/30 bg-cue-accent/[0.04] px-3 py-2">
+          <div className="flex flex-col">
+            <span className="font-mono text-xs text-cue-primary">Minimal Mode</span>
+            <span className="font-mono text-[10px] text-cue-muted">
+              Hides strips and disconnect badge regardless of toggles below.
+            </span>
+          </div>
+          <Toggle
+            checked={room.minimal_mode ?? false}
+            onChange={(next) => patchRoomField({ minimal_mode: next })}
+            label="Toggle minimal mode"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-xs text-cue-primary">Show Top Strip</span>
+            <Toggle
+              checked={room.show_top_strip ?? true}
+              onChange={(next) => patchRoomField({ show_top_strip: next })}
+              label="Toggle top strip visibility"
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-xs text-cue-primary">Show Bottom Strip</span>
+            <Toggle
+              checked={room.show_bottom_strip ?? true}
+              onChange={(next) => patchRoomField({ show_bottom_strip: next })}
+              label="Toggle bottom strip visibility"
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-xs text-cue-primary">Show Session Title</span>
+            <Toggle
+              checked={room.show_session_title ?? true}
+              onChange={(next) => patchRoomField({ show_session_title: next })}
+              label="Toggle session title visibility"
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-xs text-cue-primary">Show Speaker Name</span>
+            <Toggle
+              checked={room.show_speaker_name ?? true}
+              onChange={(next) => patchRoomField({ show_speaker_name: next })}
+              label="Toggle speaker name visibility"
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-xs text-cue-primary">Show Disconnect Badge</span>
+            <Toggle
+              checked={room.show_disconnect_badge ?? true}
+              onChange={(next) => patchRoomField({ show_disconnect_badge: next })}
+              label="Toggle disconnect badge visibility"
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-xs text-cue-primary">Show Seconds on Clock</span>
+            <Toggle
+              checked={room.show_seconds_on_clock ?? true}
+              onChange={(next) => patchRoomField({ show_seconds_on_clock: next })}
+              label="Toggle seconds on wall clock"
+            />
+          </div>
         </div>
       </div>
     </div>

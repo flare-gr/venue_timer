@@ -42,6 +42,13 @@ export interface Room {
   accent_color: string
   font_size: FontSize
   show_clock: boolean
+  show_seconds_on_clock: boolean
+  show_top_strip: boolean
+  show_bottom_strip: boolean
+  show_session_title: boolean
+  show_speaker_name: boolean
+  show_disconnect_badge: boolean
+  minimal_mode: boolean
   message_text: string
   message_active: boolean
   emergency_text: string
@@ -64,6 +71,13 @@ export interface RoomCreatePayload {
   accent_color?: string
   font_size?: FontSize
   show_clock?: boolean
+  show_seconds_on_clock?: boolean
+  show_top_strip?: boolean
+  show_bottom_strip?: boolean
+  show_session_title?: boolean
+  show_speaker_name?: boolean
+  show_disconnect_badge?: boolean
+  minimal_mode?: boolean
   auto_advance?: boolean
   handover_seconds?: number
 }
@@ -74,6 +88,13 @@ export interface RoomUpdatePayload {
   accent_color?: string
   font_size?: FontSize
   show_clock?: boolean
+  show_seconds_on_clock?: boolean
+  show_top_strip?: boolean
+  show_bottom_strip?: boolean
+  show_session_title?: boolean
+  show_speaker_name?: boolean
+  show_disconnect_badge?: boolean
+  minimal_mode?: boolean
   auto_advance?: boolean
   handover_seconds?: number
 }

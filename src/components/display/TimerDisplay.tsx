@@ -43,7 +43,7 @@ function WarningIcon() {
   )
 }
 
-function useWallClock(enabled: boolean): string {
+function useWallClock(enabled: boolean, withSeconds: boolean): string {
   const [clock, setClock] = useState('')
   const rafRef = useRef<number>(0)
   useEffect(() => {
@@ -52,13 +52,17 @@ function useWallClock(enabled: boolean): string {
       const now = new Date()
       const h = String(now.getHours()).padStart(2, '0')
       const m = String(now.getMinutes()).padStart(2, '0')
-      const s = String(now.getSeconds()).padStart(2, '0')
-      setClock(`${h}:${m}:${s}`)
+      if (withSeconds) {
+        const s = String(now.getSeconds()).padStart(2, '0')
+        setClock(`${h}:${m}:${s}`)
+      } else {
+        setClock(`${h}:${m}`)
+      }
       rafRef.current = requestAnimationFrame(tick)
     }
     rafRef.current = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(rafRef.current)
-  }, [enabled])
+  }, [enabled, withSeconds])
   return clock
 }
 
@@ -96,7 +100,10 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
     skewRef,
   )
 
-  const wallClock = useWallClock(room?.show_clock ?? false)
+  const wallClock = useWallClock(
+    room?.show_clock ?? false,
+    room?.show_seconds_on_clock ?? true,
+  )
 
   if (notFound) {
     return (
@@ -150,6 +157,13 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
   const isLive = room.state === 'live' && current !== null
   const showMessageOverlay = room.message_active && !isComplete
 
+  const minimalMode = room.minimal_mode ?? false
+  const showTopStrip = !minimalMode && (room.show_top_strip ?? true)
+  const showBottomStrip = !minimalMode && (room.show_bottom_strip ?? true)
+  const showDisconnectBadge = !minimalMode && (room.show_disconnect_badge ?? true)
+  const showSessionTitle = room.show_session_title ?? true
+  const showSpeakerName = room.show_speaker_name ?? true
+
   const isPaused = isLive && current?.state === 'paused'
   const isRunningOrOvertime =
     isLive && current && (current.state === 'running' || current.state === 'overtime')
@@ -187,6 +201,7 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
       )}
 
       {/* Top strip */}
+      {showTopStrip && (
       <div className="top-strip flex items-center justify-between bg-cue-surface/90 border-b border-cue-border px-[2%]">
         <div className="flex items-center gap-[1.5%] min-w-0">
           {room.logo && (
@@ -205,7 +220,10 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
           >
             {isOvertime ? `OVERTIME | ${room.name}` : room.name}
           </span>
-          {isLive && current && (current.session_title || current.speaker_name) && (
+          {isLive && current && (
+            (showSessionTitle && (current.session_title || current.name)) ||
+            (showSpeakerName && current.speaker_name)
+          ) && (
             <>
               <span
                 className="font-display text-cue-muted shrink-0"
@@ -217,14 +235,15 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
                 className="font-display tracking-wide text-cue-muted truncate"
                 style={{ fontSize: 'clamp(0.65rem, 1.7vw, 1.9rem)' }}
               >
-                {current.session_title || current.name}
-                {current.speaker_name && ` — ${current.speaker_name}`}
+                {showSessionTitle && (current.session_title || current.name)}
+                {showSessionTitle && showSpeakerName && current.speaker_name && ' — '}
+                {showSpeakerName && current.speaker_name}
               </span>
             </>
           )}
         </div>
         <div className="flex items-center gap-3 shrink-0">
-          {status === 'disconnected' && (
+          {showDisconnectBadge && status === 'disconnected' && (
             <span className="flex items-center gap-1.5 font-mono text-[#FF2040]" style={{ fontSize: 'clamp(0.5rem, 0.9vw, 0.8rem)' }}>
               <span className="h-1.5 w-1.5 rounded-full bg-[#FF2040] animate-fetching" />
               RECONNECTING
@@ -240,11 +259,15 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
           )}
         </div>
       </div>
+      )}
 
       {/* Center area */}
       <div
         className="center-area flex flex-col items-center justify-center"
-        style={showMessageOverlay ? { bottom: '20%' } : undefined}
+        style={{
+          top: showTopStrip ? '10%' : '0%',
+          bottom: showMessageOverlay ? '20%' : showBottomStrip ? '10%' : '0%',
+        }}
       >
         {/* Complete */}
         {isComplete && (
@@ -274,7 +297,7 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
             >
               Up Next
             </span>
-            {nextTimer && (
+            {nextTimer && showSessionTitle && (
               <span
                 className="font-display leading-none tracking-wide text-cue-primary text-center max-w-[90%]"
                 style={{ fontSize: 'clamp(2rem, 7vw, 7rem)' }}
@@ -282,7 +305,7 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
                 {nextTimer.session_title || nextTimer.name}
               </span>
             )}
-            {nextTimer?.speaker_name && (
+            {nextTimer?.speaker_name && showSpeakerName && (
               <span
                 className="font-display tracking-wide text-cue-muted"
                 style={{ fontSize: 'clamp(1rem, 2.5vw, 2.5rem)' }}
@@ -327,9 +350,9 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
               className="font-display leading-none tracking-wide text-cue-primary text-center"
               style={{ fontSize: 'clamp(2rem, 9vw, 10rem)' }}
             >
-              {current.session_title || current.name}
+              {showSessionTitle ? (current.session_title || current.name) : current.name}
             </span>
-            {current.speaker_name && (
+            {current.speaker_name && showSpeakerName && (
               <span
                 className="font-display tracking-wide text-cue-muted text-center"
                 style={{ fontSize: 'clamp(1rem, 2.5vw, 2.5rem)' }}
@@ -410,7 +433,7 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
               className="font-display leading-none tracking-wide text-cue-primary text-center"
               style={{ fontSize: 'clamp(2rem, 7vw, 8rem)' }}
             >
-              {current.session_title || current.name}
+              {showSessionTitle ? (current.session_title || current.name) : current.name}
             </span>
             <span
               className="font-mono tabular-nums text-cue-muted"
@@ -442,6 +465,7 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
       )}
 
       {/* Bottom strip */}
+      {showBottomStrip && (
       <div className="bottom-strip flex items-center justify-center bg-cue-surface/90 border-t border-cue-border">
         <span
           className="font-display tracking-[0.3em]"
@@ -454,6 +478,7 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
           {isOvertime ? 'SESSION ENDED' : isComplete ? 'EVENT COMPLETE' : isHandover ? 'HANDOVER' : 'VENUE TIMER'}
         </span>
       </div>
+      )}
     </div>
   )
 }
