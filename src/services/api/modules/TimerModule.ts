@@ -1,16 +1,17 @@
 import type { AxiosInstance } from 'axios'
 import type {
+  Room,
   Timer,
   TimerCreatePayload,
   TimerUpdatePayload,
   StartPayload,
   ResetPayload,
   SetDurationPayload,
-  MessagePayload,
-  EmergencyPayload,
+  AdjustPayload,
+  MoveTimerPayload,
 } from '../types.ts'
 
-const BASE = '/api/timers'
+const base = (roomId: number) => `/api/rooms/${roomId}/timers`
 
 export class TimerModule {
   private readonly http: AxiosInstance
@@ -19,67 +20,75 @@ export class TimerModule {
     this.http = http
   }
 
-  async list(): Promise<Timer[]> {
-    const { data } = await this.http.get<Timer[]>(`${BASE}/`)
+  async list(roomId: number): Promise<Timer[]> {
+    const { data } = await this.http.get<Timer[]>(`${base(roomId)}/`)
     return data
   }
 
-  async get(id: number): Promise<Timer> {
-    const { data } = await this.http.get<Timer>(`${BASE}/${id}/`)
+  async get(roomId: number, id: number): Promise<Timer> {
+    const { data } = await this.http.get<Timer>(`${base(roomId)}/${id}/`)
     return data
   }
 
-  async create(payload: TimerCreatePayload): Promise<Timer> {
-    const { data } = await this.http.post<Timer>(`${BASE}/`, payload)
+  async create(roomId: number, payload: TimerCreatePayload): Promise<Timer> {
+    const { data } = await this.http.post<Timer>(`${base(roomId)}/`, payload)
     return data
   }
 
-  async update(id: number, payload: TimerUpdatePayload): Promise<Timer> {
-    const { data } = await this.http.put<Timer>(`${BASE}/${id}/`, payload)
+  async patch(roomId: number, id: number, payload: TimerUpdatePayload): Promise<Timer> {
+    const { data } = await this.http.patch<Timer>(`${base(roomId)}/${id}/`, payload)
     return data
   }
 
-  async patch(id: number, payload: TimerUpdatePayload): Promise<Timer> {
-    const { data } = await this.http.patch<Timer>(`${BASE}/${id}/`, payload)
+  async delete(roomId: number, id: number): Promise<void> {
+    await this.http.delete(`${base(roomId)}/${id}/`)
+  }
+
+  async start(roomId: number, id: number, payload?: StartPayload): Promise<Timer> {
+    const { data } = await this.http.post<Timer>(`${base(roomId)}/${id}/start/`, payload)
     return data
   }
 
-  async delete(id: number): Promise<void> {
-    await this.http.delete(`${BASE}/${id}/`)
-  }
-
-  async start(id: number, payload?: StartPayload): Promise<Timer> {
-    const { data } = await this.http.post<Timer>(`${BASE}/${id}/start/`, payload)
+  async pause(roomId: number, id: number): Promise<Timer> {
+    const { data } = await this.http.post<Timer>(`${base(roomId)}/${id}/pause/`)
     return data
   }
 
-  async pause(id: number): Promise<Timer> {
-    const { data } = await this.http.post<Timer>(`${BASE}/${id}/pause/`)
+  async resume(roomId: number, id: number): Promise<Timer> {
+    const { data } = await this.http.post<Timer>(`${base(roomId)}/${id}/resume/`)
     return data
   }
 
-  async resume(id: number): Promise<Timer> {
-    const { data } = await this.http.post<Timer>(`${BASE}/${id}/resume/`)
+  async reset(roomId: number, id: number, payload?: ResetPayload): Promise<Timer> {
+    const { data } = await this.http.post<Timer>(`${base(roomId)}/${id}/reset/`, payload)
     return data
   }
 
-  async reset(id: number, payload?: ResetPayload): Promise<Timer> {
-    const { data } = await this.http.post<Timer>(`${BASE}/${id}/reset/`, payload)
+  async setDuration(
+    roomId: number,
+    id: number,
+    payload: SetDurationPayload,
+  ): Promise<Timer> {
+    const { data } = await this.http.post<Timer>(
+      `${base(roomId)}/${id}/set_duration/`,
+      payload,
+    )
     return data
   }
 
-  async setDuration(id: number, payload: SetDurationPayload): Promise<Timer> {
-    const { data } = await this.http.post<Timer>(`${BASE}/${id}/set_duration/`, payload)
+  async adjust(roomId: number, id: number, payload: AdjustPayload): Promise<Timer> {
+    const { data } = await this.http.post<Timer>(
+      `${base(roomId)}/${id}/adjust/`,
+      payload,
+    )
     return data
   }
 
-  async message(id: number, payload: MessagePayload): Promise<Timer> {
-    const { data } = await this.http.post<Timer>(`${BASE}/${id}/message/`, payload)
-    return data
-  }
-
-  async emergency(id: number, payload: EmergencyPayload): Promise<Timer> {
-    const { data } = await this.http.post<Timer>(`${BASE}/${id}/emergency/`, payload)
+  async move(roomId: number, id: number, payload: MoveTimerPayload): Promise<Room> {
+    const { data } = await this.http.post<Room>(
+      `${base(roomId)}/${id}/move/`,
+      payload,
+    )
     return data
   }
 }

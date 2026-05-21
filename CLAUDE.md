@@ -55,6 +55,54 @@ network interruptions without losing the current timer state from memory.
 - Auth tokens are stored in `localStorage` (persist across page loads).
 - The configured Axios client with JWT interceptors lives on `authService` — import `authService.apiClient` for authenticated requests.
 
+### Multi-room model
+
+- **Rooms are the unit of subscription.** Displays connect to `/ws/rooms/<id>/?role=display`,
+  admin panels to `/ws/rooms/<id>/?role=admin`. The integer `id` is the URL key —
+  use it everywhere (routes, WS, REST, localStorage). The backend removed slugs in
+  migration `0005_remove_room_slug.py`; there is no `slug` field on Room.
+- **WS role param.** `?role=display` suppresses `auth_ok` / `auth_error` frames so display
+  clients see only `room_state`. `?role=admin` is the default and matches the historical
+  behaviour. `useRoomSocket` accepts a `role` option; display call sites must pass
+  `role: 'display'`.
+- **Branding and overlays live on the room.** `logo`, `accent_color`, `font_size`,
+  `show_clock`, `message_*`, `emergency_*`, plus the meta-state machine
+  `idle | live | handover | complete`. Per-timer fields are content-only:
+  `session_title`, `speaker_name`, `order`, `handover_seconds` override.
+- **Room modes.** `simple` rooms own exactly one auto-created timer; the backend rejects
+  attempts to add more. `schedule` rooms hold an ordered runsheet and expose
+  `advance` / `previous` / `skip_to` / `reorder` actions. Use
+  `GET /api/rooms/<id>/mode_switch_eligibility/` to gate mode-switch UI before PATCH.
+- **Display precedence (highest → lowest):**
+  1. `room.emergency_active` — full-screen takeover.
+  2. `room.state === 'complete'` — runsheet finished, "Thank you" screen.
+  3. `room.state === 'handover'` — neutral countdown to `handover_end_time` plus
+     `next_timer` preview.
+  4. `room.state === 'live'` — render the timer at `room.current_timer`. Its state
+     (`idle | running | paused | overtime`) drives the visual treatment.
+  5. `room.state === 'idle'` — static "ready" or duration display.
+
+  `message_active` slides up on any non-emergency, non-complete state.
+- **Zones are server-resolved.** Every Timer's `zones` array is the effective set
+  (overrides if present, otherwise the room's defaults). The Timer payload also carries
+  `zone_overrides: Zone[] | null` — null means "inheriting", non-null means "override
+  active". Use that flag (not heuristics on `zones`) to drive override-vs-inherit UI.
+- **WebSocket carries `room_state` snapshots, not deltas.** Every message is the full
+  Room (with all timers) plus `next_timer` (always populated in schedule mode when there
+  is a next session). Replace local state on every message — never merge.
+- **Clock skew rides on `room_state`.** Every snapshot includes `server_time`
+  (ISO-8601). `useRoomSocket` updates the skew offset on every message, so drift can't
+  accumulate on long-lived display connections. No separate `ping`/`pong` probe.
+- **Timer adjust is atomic on the server.** Use
+  `POST /api/rooms/<id>/timers/<id>/adjust/` `{seconds: ±N}` instead of reading
+  `end_time` + applying skew + calling `set_duration`. The server handles state-specific
+  arithmetic (running/paused/idle/overtime) and clamping.
+- **Single-timer move is atomic.** Use
+  `POST /api/rooms/<id>/timers/<id>/move/` `{to_order: N}` for up/down buttons. Keep
+  the bulk `reorder` endpoint for drag-and-drop completion.
+- **Close code `4404` is fatal.** It means the room id doesn't exist. Show a "no such
+  room" message and stop retrying.
+
 ---
 
 ## Design System — "Cue"

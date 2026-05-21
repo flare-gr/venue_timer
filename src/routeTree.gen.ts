@@ -14,8 +14,9 @@ import { Route as DisplayLayoutRouteImport } from './routes/display/_layout'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminLayoutRouteImport } from './routes/admin/_layout'
 import { Route as DisplayLayoutIndexRouteImport } from './routes/display/_layout/index'
-import { Route as DisplayLayoutTimerIdRouteImport } from './routes/display/_layout/$timerId'
-import { Route as AdminLayoutTimersIndexRouteImport } from './routes/admin/_layout/timers/index'
+import { Route as DisplayLayoutRoomIdRouteImport } from './routes/display/_layout/$roomId'
+import { Route as AdminLayoutRoomsIndexRouteImport } from './routes/admin/_layout/rooms/index'
+import { Route as AdminLayoutRoomsRoomIdRouteImport } from './routes/admin/_layout/rooms/$roomId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -42,14 +43,19 @@ const DisplayLayoutIndexRoute = DisplayLayoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DisplayLayoutRoute,
 } as any)
-const DisplayLayoutTimerIdRoute = DisplayLayoutTimerIdRouteImport.update({
-  id: '/$timerId',
-  path: '/$timerId',
+const DisplayLayoutRoomIdRoute = DisplayLayoutRoomIdRouteImport.update({
+  id: '/$roomId',
+  path: '/$roomId',
   getParentRoute: () => DisplayLayoutRoute,
 } as any)
-const AdminLayoutTimersIndexRoute = AdminLayoutTimersIndexRouteImport.update({
-  id: '/timers/',
-  path: '/timers/',
+const AdminLayoutRoomsIndexRoute = AdminLayoutRoomsIndexRouteImport.update({
+  id: '/rooms/',
+  path: '/rooms/',
+  getParentRoute: () => AdminLayoutRoute,
+} as any)
+const AdminLayoutRoomsRoomIdRoute = AdminLayoutRoomsRoomIdRouteImport.update({
+  id: '/rooms/$roomId',
+  path: '/rooms/$roomId',
   getParentRoute: () => AdminLayoutRoute,
 } as any)
 
@@ -58,17 +64,19 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminLayoutRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/display': typeof DisplayLayoutRouteWithChildren
-  '/display/$timerId': typeof DisplayLayoutTimerIdRoute
+  '/display/$roomId': typeof DisplayLayoutRoomIdRoute
   '/display/': typeof DisplayLayoutIndexRoute
-  '/admin/timers/': typeof AdminLayoutTimersIndexRoute
+  '/admin/rooms/$roomId': typeof AdminLayoutRoomsRoomIdRoute
+  '/admin/rooms/': typeof AdminLayoutRoomsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminLayoutRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
-  '/display/$timerId': typeof DisplayLayoutTimerIdRoute
+  '/display/$roomId': typeof DisplayLayoutRoomIdRoute
   '/display': typeof DisplayLayoutIndexRoute
-  '/admin/timers': typeof AdminLayoutTimersIndexRoute
+  '/admin/rooms/$roomId': typeof AdminLayoutRoomsRoomIdRoute
+  '/admin/rooms': typeof AdminLayoutRoomsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -76,9 +84,10 @@ export interface FileRoutesById {
   '/admin/_layout': typeof AdminLayoutRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/display/_layout': typeof DisplayLayoutRouteWithChildren
-  '/display/_layout/$timerId': typeof DisplayLayoutTimerIdRoute
+  '/display/_layout/$roomId': typeof DisplayLayoutRoomIdRoute
   '/display/_layout/': typeof DisplayLayoutIndexRoute
-  '/admin/_layout/timers/': typeof AdminLayoutTimersIndexRoute
+  '/admin/_layout/rooms/$roomId': typeof AdminLayoutRoomsRoomIdRoute
+  '/admin/_layout/rooms/': typeof AdminLayoutRoomsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -87,26 +96,29 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/login'
     | '/display'
-    | '/display/$timerId'
+    | '/display/$roomId'
     | '/display/'
-    | '/admin/timers/'
+    | '/admin/rooms/$roomId'
+    | '/admin/rooms/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
     | '/admin/login'
-    | '/display/$timerId'
+    | '/display/$roomId'
     | '/display'
-    | '/admin/timers'
+    | '/admin/rooms/$roomId'
+    | '/admin/rooms'
   id:
     | '__root__'
     | '/'
     | '/admin/_layout'
     | '/admin/login'
     | '/display/_layout'
-    | '/display/_layout/$timerId'
+    | '/display/_layout/$roomId'
     | '/display/_layout/'
-    | '/admin/_layout/timers/'
+    | '/admin/_layout/rooms/$roomId'
+    | '/admin/_layout/rooms/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -153,29 +165,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DisplayLayoutIndexRouteImport
       parentRoute: typeof DisplayLayoutRoute
     }
-    '/display/_layout/$timerId': {
-      id: '/display/_layout/$timerId'
-      path: '/$timerId'
-      fullPath: '/display/$timerId'
-      preLoaderRoute: typeof DisplayLayoutTimerIdRouteImport
+    '/display/_layout/$roomId': {
+      id: '/display/_layout/$roomId'
+      path: '/$roomId'
+      fullPath: '/display/$roomId'
+      preLoaderRoute: typeof DisplayLayoutRoomIdRouteImport
       parentRoute: typeof DisplayLayoutRoute
     }
-    '/admin/_layout/timers/': {
-      id: '/admin/_layout/timers/'
-      path: '/timers'
-      fullPath: '/admin/timers/'
-      preLoaderRoute: typeof AdminLayoutTimersIndexRouteImport
+    '/admin/_layout/rooms/': {
+      id: '/admin/_layout/rooms/'
+      path: '/rooms'
+      fullPath: '/admin/rooms/'
+      preLoaderRoute: typeof AdminLayoutRoomsIndexRouteImport
+      parentRoute: typeof AdminLayoutRoute
+    }
+    '/admin/_layout/rooms/$roomId': {
+      id: '/admin/_layout/rooms/$roomId'
+      path: '/rooms/$roomId'
+      fullPath: '/admin/rooms/$roomId'
+      preLoaderRoute: typeof AdminLayoutRoomsRoomIdRouteImport
       parentRoute: typeof AdminLayoutRoute
     }
   }
 }
 
 interface AdminLayoutRouteChildren {
-  AdminLayoutTimersIndexRoute: typeof AdminLayoutTimersIndexRoute
+  AdminLayoutRoomsRoomIdRoute: typeof AdminLayoutRoomsRoomIdRoute
+  AdminLayoutRoomsIndexRoute: typeof AdminLayoutRoomsIndexRoute
 }
 
 const AdminLayoutRouteChildren: AdminLayoutRouteChildren = {
-  AdminLayoutTimersIndexRoute: AdminLayoutTimersIndexRoute,
+  AdminLayoutRoomsRoomIdRoute: AdminLayoutRoomsRoomIdRoute,
+  AdminLayoutRoomsIndexRoute: AdminLayoutRoomsIndexRoute,
 }
 
 const AdminLayoutRouteWithChildren = AdminLayoutRoute._addFileChildren(
@@ -183,12 +204,12 @@ const AdminLayoutRouteWithChildren = AdminLayoutRoute._addFileChildren(
 )
 
 interface DisplayLayoutRouteChildren {
-  DisplayLayoutTimerIdRoute: typeof DisplayLayoutTimerIdRoute
+  DisplayLayoutRoomIdRoute: typeof DisplayLayoutRoomIdRoute
   DisplayLayoutIndexRoute: typeof DisplayLayoutIndexRoute
 }
 
 const DisplayLayoutRouteChildren: DisplayLayoutRouteChildren = {
-  DisplayLayoutTimerIdRoute: DisplayLayoutTimerIdRoute,
+  DisplayLayoutRoomIdRoute: DisplayLayoutRoomIdRoute,
   DisplayLayoutIndexRoute: DisplayLayoutIndexRoute,
 }
 

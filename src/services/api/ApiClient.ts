@@ -1,13 +1,18 @@
 import type { AxiosInstance } from 'axios'
+import { RoomModule } from './modules/RoomModule.ts'
 import { TimerModule } from './modules/TimerModule.ts'
-import { ZoneModule } from './modules/ZoneModule.ts'
+import { RoomZoneModule, TimerZoneModule } from './modules/ZoneModule.ts'
 
 export class ApiClient {
-  readonly timer: TimerModule
-  readonly zones: ZoneModule
+  readonly rooms: RoomModule
+  readonly timers: TimerModule
+  readonly roomZones: RoomZoneModule
+  readonly timerZones: TimerZoneModule
 
   constructor(http: AxiosInstance) {
-    this.timer = new TimerModule(http)
-    this.zones = new ZoneModule(http)
+    this.rooms = new RoomModule(http)
+    this.timers = new TimerModule(http)
+    this.roomZones = new RoomZoneModule(http)
+    this.timerZones = new TimerZoneModule(http)
   }
 }

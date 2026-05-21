@@ -20,7 +20,7 @@ function LoginPage() {
   useEffect(() => {
     applyAdminTheme('light')
     if (authService.isAuthenticated()) {
-      void navigate({ to: '/admin/timers' })
+      void navigate({ to: '/admin/rooms' })
     }
     return () => clearAdminTheme()
   }, [navigate])
@@ -31,7 +31,7 @@ function LoginPage() {
     setLoading(true)
     try {
       await login(username, password)
-      await navigate({ to: '/admin/timers' })
+      await navigate({ to: '/admin/rooms' })
     } catch {
       setError('Invalid username or password.')
     } finally {

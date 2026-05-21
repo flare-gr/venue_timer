@@ -1,17 +1,18 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createFileRoute, useNavigate, Navigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { TimerDisplay } from '../../../components/display/TimerDisplay'
 import { ShortcutHintPopup } from '../../../components/display/ShortcutHintPopup'
 
-export const Route = createFileRoute('/display/_layout/$timerId')({
-  component: TimerDisplayPage,
+export const Route = createFileRoute('/display/_layout/$roomId')({
+  component: RoomDisplayPage,
 })
 
-function TimerDisplayPage() {
-  const { timerId } = Route.useParams()
+function RoomDisplayPage() {
+  const { roomId: roomIdRaw } = Route.useParams()
   const navigate = useNavigate()
-  const numericId = parseInt(timerId, 10)
+  const roomId = Number(roomIdRaw)
+  const invalidId = !Number.isInteger(roomId) || roomId <= 0
 
   const [popupVisible, setPopupVisible] = useState(
     () => localStorage.getItem('display-shortcut-dismissed') !== 'true',
@@ -20,21 +21,28 @@ function TimerDisplayPage() {
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === '`') {
-        localStorage.removeItem('display-timer-id')
-        void navigate({ to: '/display/' })
+        localStorage.removeItem('display-room-id')
+        void navigate({ to: '/display' })
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [navigate])
 
-  if (isNaN(numericId)) {
-    return <Navigate to="/display/" />
+  if (invalidId) {
+    return (
+      <div className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-cue-base">
+        <span className="font-display text-[4vw] tracking-[0.25em] text-[#FF2040]">
+          INVALID ROOM
+        </span>
+        <span className="font-mono text-[1.2vw] text-cue-muted">/{roomIdRaw}</span>
+      </div>
+    )
   }
 
   return (
     <>
-      <TimerDisplay timerId={numericId} />
+      <TimerDisplay roomId={roomId} />
       {popupVisible && (
         <ShortcutHintPopup
           onDismiss={() => setPopupVisible(false)}

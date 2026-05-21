@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import type { RefObject } from 'react'
-import type { Timer } from '../services/api'
+import type { TimerState } from '../services/api'
 
 function formatMs(ms: number): string {
   const abs = Math.abs(ms)
@@ -15,8 +15,20 @@ function formatMs(ms: number): string {
   return `${sign}${mm}:${ss}`
 }
 
+/**
+ * Structural slice the countdown needs. Lets the same hook drive both timer
+ * countdowns (state machine + paused_remaining) and synthesised handover
+ * countdowns (pass { state: 'running', end_time: handover_end_time, ... }).
+ */
+export interface CountdownInput {
+  state: TimerState
+  duration: number
+  end_time: string | null
+  paused_remaining: number | null
+}
+
 export function useCountdown(
-  timer: Timer,
+  timer: CountdownInput,
   skewRef: RefObject<number>,
 ): { display: string; isOvertime: boolean; remainingMs: number } {
   const [rafDisplay, setRafDisplay] = useState<string>('00:00')
@@ -24,7 +36,6 @@ export function useCountdown(
   const [isOvertime, setIsOvertime] = useState(false)
   const rafId = useRef<number>(0)
 
-  // Derive static display values without touching state in effects
   const { staticDisplay, staticRemainingMs } = useMemo(() => {
     if (timer.state === 'idle') {
       const ms = timer.duration * 1000

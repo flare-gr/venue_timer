@@ -22,7 +22,7 @@ export function ShortcutHintPopup({ onDismiss, onDismissPermanent }: ShortcutHin
               <kbd className="rounded border border-cue-border bg-cue-base px-2 py-0.5 font-mono text-cue-primary">
                 `
               </kbd>{' '}
-              (backtick) to return to timer selection.
+              (backtick) to return to room selection.
             </p>
           </div>
           <div className="flex justify-end gap-3">

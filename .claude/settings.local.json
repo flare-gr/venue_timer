@@ -22,7 +22,10 @@
       "Bash(npx tsc *)",
       "Bash(dir *)",
       "Bash(Select-Object -Property Name, FullName)",
-      "Bash(npx eslint *)"
+      "Bash(npx eslint *)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Select-Object -First 5)",
+      "PowerShell(head *)"
     ]
   }
 }
