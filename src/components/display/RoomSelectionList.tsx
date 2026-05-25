@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { Room } from '../../services/api'
 import { RoomStateBadge } from '../admin/StateBadge'
 
@@ -9,17 +10,18 @@ interface RoomSelectionListProps {
 }
 
 export function RoomSelectionList({ rooms, isLoading, isError, onSelect }: RoomSelectionListProps) {
+  const { t } = useTranslation(['display', 'common'])
   return (
     <div className="flex min-h-screen w-full items-center justify-center p-8">
       <div className="w-full max-w-[640px] overflow-hidden rounded-lg border border-cue-border bg-cue-surface shadow-2xl animate-fade-slide-up">
         <div className="h-1 bg-cue-accent" />
 
         <div className="px-8 py-6">
-          <h1 className="font-display text-[clamp(1.5rem,3.8vw,3rem)] leading-none tracking-widest text-cue-accent">
-            SELECT ROOM
+          <h1 className="font-display text-[clamp(1.2rem,2.4vw,2rem)] leading-none tracking-widest text-cue-accent">
+            {t('selectRoom')}
           </h1>
           <p className="mt-1 font-mono text-[clamp(0.6rem,0.85vw,0.8rem)] text-cue-muted">
-            Choose a room to display on this screen
+            {t('chooseRoom')}
           </p>
         </div>
 
@@ -40,18 +42,18 @@ export function RoomSelectionList({ rooms, isLoading, isError, onSelect }: RoomS
           {isError && (
             <div className="rounded border border-[#FF2040]/30 bg-[#FF2040]/5 px-4 py-3">
               <p className="font-mono text-[clamp(0.65rem,0.85vw,0.8rem)] text-[#FF2040]">
-                Failed to load rooms. Check that the backend is running.
+                {t('loadError')}
               </p>
             </div>
           )}
 
           {!isLoading && !isError && rooms.length === 0 && (
             <div className="py-8 text-center">
-              <p className="font-display text-[clamp(1rem,1.8vw,1.4rem)] tracking-widest text-cue-muted">
-                NO ROOMS FOUND
+              <p className="font-display text-[clamp(0.9rem,1.3vw,1.1rem)] tracking-widest text-cue-muted">
+                {t('noRoomsFound')}
               </p>
               <p className="mt-1 font-mono text-[clamp(0.6rem,0.75vw,0.7rem)] text-cue-muted/60">
-                Create a room from the admin panel first.
+                {t('createRoomFirst')}
               </p>
             </div>
           )}
@@ -70,11 +72,11 @@ export function RoomSelectionList({ rooms, isLoading, isError, onSelect }: RoomS
                       style={{ backgroundColor: room.accent_color }}
                     />
                     <div className="flex flex-col gap-0.5 min-w-0">
-                      <span className="font-display text-[clamp(0.9rem,1.4vw,1.2rem)] leading-none tracking-wide text-cue-primary truncate">
+                      <span className="font-display text-[clamp(0.85rem,1.05vw,1.05rem)] leading-none tracking-wide text-cue-primary truncate">
                         {room.name}
                       </span>
                       <span className="font-mono text-[clamp(0.55rem,0.85vw,0.75rem)] text-cue-muted truncate">
-                        #{room.id} · {room.mode} · {room.timers.length} {room.timers.length === 1 ? 'timer' : 'timers'}
+                        #{room.id} · {t(`common:mode.${room.mode}`)} · {t('timer', { count: room.timers.length })}
                       </span>
                     </div>
                   </div>
@@ -87,7 +89,7 @@ export function RoomSelectionList({ rooms, isLoading, isError, onSelect }: RoomS
 
         <div className="border-t border-cue-border px-8 py-4">
           <p className="font-mono text-[clamp(0.55rem,0.75vw,0.7rem)] text-cue-muted/60">
-            VENUE TIMER — Click a room to connect
+            {t('footerSelect')}
           </p>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useApi, BP_ROLES } from '../../services/api'
 import type {
   Timer,
@@ -92,6 +93,7 @@ function nullableSecs(raw: string): number | null {
 }
 
 export function TimerForm({ roomId, initial, debateEnabled = false, onSaved, onCancel }: TimerFormProps) {
+  const { t } = useTranslation(['admin', 'common'])
   const api = useApi()
   const [form, setForm] = useState<FormState>(() => initialState(initial))
   const [durationInput, setDurationInput] = useState(() => formatMMSS(form.duration))
@@ -124,7 +126,7 @@ export function TimerForm({ roomId, initial, debateEnabled = false, onSaved, onC
     if (!form.name.trim()) return
     const parsedDuration = parseMMSS(durationInput)
     if (parsedDuration === null || parsedDuration <= 0) {
-      setError('Duration must be a positive time (e.g. 5:00).')
+      setError(t('timerForm.durationError'))
       return
     }
     setLoading(true)
@@ -166,7 +168,7 @@ export function TimerForm({ roomId, initial, debateEnabled = false, onSaved, onC
         onSaved(created)
       }
     } catch {
-      setError(editing ? 'Failed to save timer.' : 'Failed to add timer.')
+      setError(editing ? t('timerForm.saveError') : t('timerForm.addError'))
     } finally {
       setLoading(false)
     }
@@ -177,47 +179,47 @@ export function TimerForm({ roomId, initial, debateEnabled = false, onSaved, onC
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="sm:col-span-2">
           <label className="mb-1 block font-mono text-xs font-medium tracking-widest text-cue-muted uppercase">
-            Internal Name <span className="text-[#FF2040]">*</span>
+            {t('timerForm.internalName')} <span className="text-[#FF2040]">*</span>
           </label>
           <input
             type="text"
             required
             value={form.name}
             onChange={(e) => update('name', e.target.value)}
-            placeholder="e.g. Keynote-1"
+            placeholder={t('timerForm.internalNamePlaceholder')}
             className="w-full rounded border border-cue-border bg-cue-surface px-3 py-2 font-mono text-sm text-cue-primary placeholder:text-cue-muted/50 focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
           />
         </div>
 
         <div className="sm:col-span-2">
           <label className="mb-1 block font-mono text-xs font-medium tracking-widest text-cue-muted uppercase">
-            Session Title <span className="text-cue-muted/50">(public)</span>
+            {t('timerForm.sessionTitle')} <span className="text-cue-muted/50">{t('timerForm.public')}</span>
           </label>
           <input
             type="text"
             value={form.session_title}
             onChange={(e) => update('session_title', e.target.value)}
-            placeholder="e.g. Opening Keynote"
+            placeholder={t('timerForm.sessionTitlePlaceholder')}
             className="w-full rounded border border-cue-border bg-cue-surface px-3 py-2 font-mono text-sm text-cue-primary placeholder:text-cue-muted/50 focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
           />
         </div>
 
         <div>
           <label className="mb-1 block font-mono text-xs font-medium tracking-widest text-cue-muted uppercase">
-            Speaker
+            {t('timerForm.speaker')}
           </label>
           <input
             type="text"
             value={form.speaker_name}
             onChange={(e) => update('speaker_name', e.target.value)}
-            placeholder="Optional"
+            placeholder={t('timerForm.speakerPlaceholder')}
             className="w-full rounded border border-cue-border bg-cue-surface px-3 py-2 font-mono text-sm text-cue-primary placeholder:text-cue-muted/50 focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
           />
         </div>
 
         <div>
           <label className="mb-1 block font-mono text-xs font-medium tracking-widest text-cue-muted uppercase">
-            Duration (MM:SS) <span className="text-[#FF2040]">*</span>
+            {t('timerForm.duration')} <span className="text-[#FF2040]">*</span>
           </label>
           <input
             type="text"
@@ -226,15 +228,15 @@ export function TimerForm({ roomId, initial, debateEnabled = false, onSaved, onC
             value={durationInput}
             onChange={(e) => onDurationChange(e.target.value)}
             onBlur={onDurationBlur}
-            placeholder="5:00"
+            placeholder={t('timerForm.durationPlaceholder')}
             className="w-full rounded border border-cue-border bg-cue-surface px-3 py-2 font-mono text-sm text-cue-primary focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
           />
         </div>
 
         <div className="sm:col-span-2">
           <label className="mb-1 block font-mono text-xs font-medium tracking-widest text-cue-muted uppercase">
-            Handover before this timer (sec)
-            <span className="ml-2 text-cue-muted/50 normal-case">— blank uses the room default</span>
+            {t('timerForm.handoverBefore')}
+            <span className="ml-2 text-cue-muted/50 normal-case">{t('timerForm.handoverBeforeHint')}</span>
           </label>
           <input
             type="number"
@@ -246,7 +248,7 @@ export function TimerForm({ roomId, initial, debateEnabled = false, onSaved, onC
                 e.target.value === '' ? null : Math.max(0, parseInt(e.target.value, 10) || 0),
               )
             }
-            placeholder="(room default)"
+            placeholder={t('timerForm.roomDefaultPlaceholder')}
             className="w-full rounded border border-cue-border bg-cue-surface px-3 py-2 font-mono text-sm text-cue-primary placeholder:text-cue-muted/50 focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
           />
         </div>
@@ -255,20 +257,20 @@ export function TimerForm({ roomId, initial, debateEnabled = false, onSaved, onC
           <>
             <div className="sm:col-span-2 mt-1 border-t border-cue-border pt-3">
               <span className="font-mono text-[10px] font-semibold tracking-widest text-cue-accent uppercase">
-                Debate — Speech
+                {t('timerForm.debateSpeech')}
               </span>
             </div>
 
             <div className="sm:col-span-2">
               <label className="mb-1 block font-mono text-xs font-medium tracking-widest text-cue-muted uppercase">
-                Role <span className="text-cue-muted/50 normal-case">(free text — suggestions below)</span>
+                {t('timerForm.role')} <span className="text-cue-muted/50 normal-case">{t('timerForm.roleHint')}</span>
               </label>
               <input
                 type="text"
                 list="bp-roles"
                 value={form.role}
                 onChange={(e) => update('role', e.target.value)}
-                placeholder="e.g. Prime Minister"
+                placeholder={t('timerForm.rolePlaceholder')}
                 className="w-full rounded border border-cue-border bg-cue-surface px-3 py-2 font-mono text-sm text-cue-primary placeholder:text-cue-muted/50 focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
               />
               <datalist id="bp-roles">
@@ -280,57 +282,57 @@ export function TimerForm({ roomId, initial, debateEnabled = false, onSaved, onC
 
             <div>
               <label className="mb-1 block font-mono text-xs font-medium tracking-widest text-cue-muted uppercase">
-                POIs for this speech
+                {t('timerForm.poisForSpeech')}
               </label>
               <select
                 value={poiToSelect(form.poi_enabled)}
                 onChange={(e) => update('poi_enabled', selectToPoi(e.target.value))}
                 className="w-full rounded border border-cue-border bg-cue-surface px-3 py-2 font-mono text-sm text-cue-primary focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
               >
-                <option value="">Room default</option>
-                <option value="true">Allowed</option>
-                <option value="false">Disabled</option>
+                <option value="">{t('timerForm.poiRoomDefault')}</option>
+                <option value="true">{t('timerForm.poiAllowed')}</option>
+                <option value="false">{t('timerForm.poiDisabled')}</option>
               </select>
             </div>
 
             <div>
               <label className="mb-1 block font-mono text-xs font-medium tracking-widest text-cue-muted uppercase">
-                Grace (sec)
+                {t('timerForm.grace')}
               </label>
               <input
                 type="number"
                 min="0"
                 value={form.grace_seconds ?? ''}
                 onChange={(e) => update('grace_seconds', nullableSecs(e.target.value))}
-                placeholder="(room default)"
+                placeholder={t('timerForm.roomDefaultPlaceholder')}
                 className="w-full rounded border border-cue-border bg-cue-surface px-3 py-2 font-mono text-sm text-cue-primary placeholder:text-cue-muted/50 focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
               />
             </div>
 
             <div>
               <label className="mb-1 block font-mono text-xs font-medium tracking-widest text-cue-muted uppercase">
-                Protected — Open (sec)
+                {t('timerForm.protectedOpen')}
               </label>
               <input
                 type="number"
                 min="0"
                 value={form.protected_open_seconds ?? ''}
                 onChange={(e) => update('protected_open_seconds', nullableSecs(e.target.value))}
-                placeholder="(room default)"
+                placeholder={t('timerForm.roomDefaultPlaceholder')}
                 className="w-full rounded border border-cue-border bg-cue-surface px-3 py-2 font-mono text-sm text-cue-primary placeholder:text-cue-muted/50 focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
               />
             </div>
 
             <div>
               <label className="mb-1 block font-mono text-xs font-medium tracking-widest text-cue-muted uppercase">
-                Protected — Close (sec)
+                {t('timerForm.protectedClose')}
               </label>
               <input
                 type="number"
                 min="0"
                 value={form.protected_close_seconds ?? ''}
                 onChange={(e) => update('protected_close_seconds', nullableSecs(e.target.value))}
-                placeholder="(room default)"
+                placeholder={t('timerForm.roomDefaultPlaceholder')}
                 className="w-full rounded border border-cue-border bg-cue-surface px-3 py-2 font-mono text-sm text-cue-primary placeholder:text-cue-muted/50 focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
               />
             </div>
@@ -346,14 +348,14 @@ export function TimerForm({ roomId, initial, debateEnabled = false, onSaved, onC
           disabled={loading || !form.name.trim()}
           className="rounded bg-cue-accent px-4 py-1.5 font-display text-sm tracking-widest text-white hover:bg-[#0044AA] disabled:opacity-50 transition-colors duration-[120ms]"
         >
-          {loading ? 'SAVING…' : editing ? 'SAVE' : 'ADD TIMER'}
+          {loading ? t('timerForm.saving') : editing ? t('timerForm.save') : t('timerForm.addTimer')}
         </button>
         <button
           type="button"
           onClick={onCancel}
           className="font-mono text-xs text-cue-muted hover:text-cue-primary transition-colors duration-[120ms]"
         >
-          Cancel
+          {t('common:cancel')}
         </button>
       </div>
     </form>

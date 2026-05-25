@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useApi } from '../../../../services/api'
 import type { Room, RoomMode, RoomUpdatePayload } from '../../../../services/api'
@@ -15,6 +16,7 @@ export const Route = createFileRoute('/admin/_layout/rooms/$roomId')({
 })
 
 function RoomDetailPage() {
+  const { t } = useTranslation(['admin', 'common'])
   const { roomId: roomIdRaw } = Route.useParams()
   const api = useApi()
   const queryClient = useQueryClient()
@@ -38,14 +40,14 @@ function RoomDetailPage() {
       <div className="mx-auto max-w-5xl px-5 py-6">
         <div className="rounded-lg border border-[#FF2040]/30 bg-[#FF2040]/5 px-5 py-4">
           <p className="font-mono text-sm text-[#FF2040]">
-            Invalid room id: "{roomIdRaw}".
+            {t('roomDetail.invalidId', { id: roomIdRaw })}
           </p>
         </div>
         <Link
           to="/admin/rooms"
           className="mt-4 inline-block font-mono text-xs text-cue-muted hover:text-cue-primary transition-colors duration-[120ms]"
         >
-          ← Back to rooms
+          {t('roomDetail.backToRooms')}
         </Link>
       </div>
     )
@@ -64,21 +66,21 @@ function RoomDetailPage() {
       <div className="mx-auto max-w-5xl px-5 py-6">
         <div className="rounded-lg border border-[#FF2040]/30 bg-[#FF2040]/5 px-5 py-4">
           <p className="font-mono text-sm text-[#FF2040]">
-            Failed to load room #{roomId}.
+            {t('roomDetail.loadError', { id: roomId })}
           </p>
         </div>
         <Link
           to="/admin/rooms"
           className="mt-4 inline-block font-mono text-xs text-cue-muted hover:text-cue-primary transition-colors duration-[120ms]"
         >
-          ← Back to rooms
+          {t('roomDetail.backToRooms')}
         </Link>
       </div>
     )
   }
 
   async function handleDelete() {
-    if (!confirm(`Delete room "${room!.name}"? This will also delete its timers and zones.`)) return
+    if (!confirm(t('roomDetail.deleteConfirm', { name: room!.name }))) return
     await api.rooms.delete(roomId)
     invalidate()
     void navigate({ to: '/admin/rooms' })
@@ -92,13 +94,13 @@ function RoomDetailPage() {
             to="/admin/rooms"
             className="font-mono text-xs text-cue-muted hover:text-cue-primary transition-colors duration-[120ms]"
           >
-            ← All rooms
+            {t('roomDetail.allRooms')}
           </Link>
           <h2 className="mt-2 font-display text-3xl leading-none tracking-wider text-cue-primary">
             {room.name}
           </h2>
           <p className="mt-1 font-mono text-xs text-cue-muted">
-            #{room.id} · {room.mode}
+            #{room.id} · {t(`common:mode.${room.mode}`)}
           </p>
         </div>
       </div>
@@ -146,6 +148,7 @@ interface SimpleModeProps {
 }
 
 function SimpleModeTimerCard({ room, onMutated }: SimpleModeProps) {
+  const { t } = useTranslation(['admin', 'common'])
   const [editing, setEditing] = useState(false)
   const timer = room.timers[0]
 
@@ -154,10 +157,10 @@ function SimpleModeTimerCard({ room, onMutated }: SimpleModeProps) {
       <div className="flex items-center justify-between border-b border-cue-border px-5 py-3">
         <div>
           <h3 className="font-display text-lg leading-none tracking-wider text-cue-primary">
-            TIMER DETAILS
+            {t('timerDetails.heading')}
           </h3>
           <p className="mt-1 font-mono text-[10px] text-cue-muted tracking-widest uppercase">
-            The single timer driving this room
+            {t('timerDetails.subtitle')}
           </p>
         </div>
         {!editing && (
@@ -166,7 +169,7 @@ function SimpleModeTimerCard({ room, onMutated }: SimpleModeProps) {
             onClick={() => setEditing(true)}
             className="rounded border border-cue-border px-3 py-1.5 font-display text-xs tracking-widest text-cue-muted hover:border-cue-accent hover:text-cue-accent transition-colors duration-[120ms]"
           >
-            EDIT
+            {t('timerDetails.edit')}
           </button>
         )}
       </div>
@@ -181,10 +184,10 @@ function SimpleModeTimerCard({ room, onMutated }: SimpleModeProps) {
           />
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 font-mono text-xs">
-            <Detail label="Internal name" value={timer.name} />
-            <Detail label="Duration" value={`${timer.duration}s`} />
-            <Detail label="Session title" value={timer.session_title || '—'} />
-            <Detail label="Speaker" value={timer.speaker_name || '—'} />
+            <Detail label={t('timerDetails.internalName')} value={timer.name} />
+            <Detail label={t('timerDetails.duration')} value={`${timer.duration}s`} />
+            <Detail label={t('timerDetails.sessionTitle')} value={timer.session_title || t('common:dash')} />
+            <Detail label={t('timerDetails.speaker')} value={timer.speaker_name || t('common:dash')} />
           </div>
         )}
       </div>
@@ -208,6 +211,7 @@ interface SettingsProps {
 }
 
 function RoomSettings({ room, onMutated, onDelete }: SettingsProps) {
+  const { t } = useTranslation('admin')
   const api = useApi()
   const [name, setName] = useState(room.name)
   const [accentColor, setAccentColor] = useState(room.accent_color)
@@ -255,7 +259,7 @@ function RoomSettings({ room, onMutated, onDelete }: SettingsProps) {
       await api.rooms.patch(room.id, payload)
       onMutated()
     } catch {
-      setError('Failed to save settings.')
+      setError(t('settings.saveError'))
     } finally {
       setSaving(false)
     }
@@ -265,15 +269,15 @@ function RoomSettings({ room, onMutated, onDelete }: SettingsProps) {
     <div className="rounded-lg border border-cue-border bg-cue-surface shadow-sm">
       <div className="border-b border-cue-border px-5 py-3">
         <h3 className="font-display text-lg leading-none tracking-wider text-cue-primary">
-          SETTINGS
+          {t('settings.heading')}
         </h3>
         <p className="mt-1 font-mono text-[10px] text-cue-muted tracking-widest uppercase">
-          Branding, mode, handover defaults
+          {t('settings.subtitle')}
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 px-5 py-4 sm:grid-cols-2">
-        <Field label="Name">
+        <Field label={t('settings.name')}>
           <input
             type="text"
             value={name}
@@ -282,44 +286,44 @@ function RoomSettings({ room, onMutated, onDelete }: SettingsProps) {
           />
         </Field>
 
-        <Field label="Mode">
+        <Field label={t('settings.mode')}>
           <select
             value={mode}
             onChange={(e) => setMode(e.target.value as RoomMode)}
             className="w-full rounded border border-cue-border bg-cue-base px-3 py-2 font-mono text-sm text-cue-primary focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
           >
             <option value="simple" disabled={mode !== 'simple' && simpleBlocked}>
-              Simple (ad-hoc timer)
+              {t('settings.modeSimple')}
             </option>
             <option value="schedule" disabled={mode !== 'schedule' && scheduleBlocked}>
-              Schedule (runsheet)
+              {t('settings.modeSchedule')}
             </option>
           </select>
           {mode !== 'simple' && simpleBlocked && eligibility?.required_action && (
             <p className="mt-1 font-mono text-[10px] text-[#FFAA00]">
-              Can't switch to simple: {eligibility.required_action}
+              {t('settings.cantSwitchSimple', { action: eligibility.required_action })}
             </p>
           )}
           {mode !== 'schedule' && scheduleBlocked && eligibility?.required_action && (
             <p className="mt-1 font-mono text-[10px] text-[#FFAA00]">
-              Can't switch to schedule: {eligibility.required_action}
+              {t('settings.cantSwitchSchedule', { action: eligibility.required_action })}
             </p>
           )}
         </Field>
 
-        <Field label="Font Size">
+        <Field label={t('settings.fontSize')}>
           <select
             value={fontSize}
             onChange={(e) => setFontSize(e.target.value as Room['font_size'])}
             className="w-full rounded border border-cue-border bg-cue-base px-3 py-2 font-mono text-sm text-cue-primary focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
           >
-            <option value="small">Small</option>
-            <option value="medium">Medium</option>
-            <option value="large">Large</option>
+            <option value="small">{t('fontSizes.small')}</option>
+            <option value="medium">{t('fontSizes.medium')}</option>
+            <option value="large">{t('fontSizes.large')}</option>
           </select>
         </Field>
 
-        <Field label="Accent Colour">
+        <Field label={t('settings.accentColour')}>
           <div className="flex items-center gap-2">
             <input
               type="color"
@@ -331,16 +335,16 @@ function RoomSettings({ room, onMutated, onDelete }: SettingsProps) {
           </div>
         </Field>
 
-        <Field label="Wall Clock">
+        <Field label={t('settings.wallClock')}>
           <div className="flex items-center gap-3 py-2">
-            <Toggle checked={showClock} onChange={setShowClock} label="Show wall clock" />
-            <span className="font-mono text-xs text-cue-muted">Show wall clock</span>
+            <Toggle checked={showClock} onChange={setShowClock} label={t('settings.showClock')} />
+            <span className="font-mono text-xs text-cue-muted">{t('settings.showClock')}</span>
           </div>
         </Field>
 
         {mode === 'schedule' && (
           <>
-            <Field label="Default Handover (sec)">
+            <Field label={t('settings.defaultHandover')}>
               <input
                 type="number"
                 min="0"
@@ -350,10 +354,10 @@ function RoomSettings({ room, onMutated, onDelete }: SettingsProps) {
               />
             </Field>
 
-            <Field label="Auto-advance">
+            <Field label={t('settings.autoAdvance')}>
               <div className="flex items-center gap-3 py-2">
-                <Toggle checked={autoAdvance} onChange={setAutoAdvance} label="Auto-advance" />
-                <span className="font-mono text-xs text-cue-muted">Roll forward automatically</span>
+                <Toggle checked={autoAdvance} onChange={setAutoAdvance} label={t('settings.autoAdvance')} />
+                <span className="font-mono text-xs text-cue-muted">{t('settings.rollForward')}</span>
               </div>
             </Field>
           </>
@@ -366,28 +370,28 @@ function RoomSettings({ room, onMutated, onDelete }: SettingsProps) {
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
               <span className="font-mono text-xs font-medium tracking-widest text-cue-primary uppercase">
-                Debate Mode
+                {t('settings.debateMode')}
               </span>
               <span className="font-mono text-[10px] text-cue-muted">
-                British Parliamentary — POIs, protected time, bells.
+                {t('settings.debateModeDesc')}
               </span>
             </div>
-            <Toggle checked={debateEnabled} onChange={setDebateEnabled} label="Toggle debate mode" />
+            <Toggle checked={debateEnabled} onChange={setDebateEnabled} label={t('settings.toggleDebate')} />
           </div>
 
           {debateEnabled && (
             <>
               <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="POIs Allowed">
+                <Field label={t('settings.poisAllowed')}>
                   <div className="flex items-center gap-3 py-2">
-                    <Toggle checked={poiEnabled} onChange={setPoiEnabled} label="POIs allowed" />
+                    <Toggle checked={poiEnabled} onChange={setPoiEnabled} label={t('settings.poisAllowedLabel')} />
                     <span className="font-mono text-xs text-cue-muted">
-                      Points of Information permitted
+                      {t('settings.poisPermitted')}
                     </span>
                   </div>
                 </Field>
 
-                <Field label="Grace (sec)">
+                <Field label={t('settings.grace')}>
                   <input
                     type="number"
                     min="0"
@@ -397,7 +401,7 @@ function RoomSettings({ room, onMutated, onDelete }: SettingsProps) {
                   />
                 </Field>
 
-                <Field label="Protected — Open (sec)">
+                <Field label={t('settings.protectedOpen')}>
                   <input
                     type="number"
                     min="0"
@@ -407,7 +411,7 @@ function RoomSettings({ room, onMutated, onDelete }: SettingsProps) {
                   />
                 </Field>
 
-                <Field label="Protected — Close (sec)">
+                <Field label={t('settings.protectedClose')}>
                   <input
                     type="number"
                     min="0"
@@ -419,7 +423,7 @@ function RoomSettings({ room, onMutated, onDelete }: SettingsProps) {
               </div>
               {autoAdvance && (
                 <p className="mt-3 font-mono text-[10px] text-[#FFAA00]">
-                  Tip: debates usually run with Auto-advance off so the chair advances each speech manually.
+                  {t('settings.autoAdvanceTip')}
                 </p>
               )}
             </>
@@ -438,14 +442,14 @@ function RoomSettings({ room, onMutated, onDelete }: SettingsProps) {
           disabled={saving || !name.trim()}
           className="rounded bg-cue-accent px-5 py-2 font-display text-sm tracking-widest text-white hover:bg-[#0044AA] disabled:opacity-50 transition-colors duration-[120ms]"
         >
-          {saving ? 'SAVING…' : 'SAVE SETTINGS'}
+          {saving ? t('settings.saving') : t('settings.saveSettings')}
         </button>
         <button
           type="button"
           onClick={onDelete}
           className="font-mono text-xs text-cue-muted hover:text-[#FF2040] transition-colors duration-[120ms]"
         >
-          Delete room
+          {t('settings.deleteRoom')}
         </button>
       </div>
     </div>

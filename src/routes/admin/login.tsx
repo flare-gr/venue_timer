@@ -1,15 +1,18 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../services/auth'
 import { authService } from '../../services/auth'
 import { applyAdminTheme, clearAdminTheme } from '../../utils/adminTheme'
+import { LanguageSwitcher } from '../../components/admin/LanguageSwitcher'
 
 export const Route = createFileRoute('/admin/login')({
   component: LoginPage,
 })
 
 function LoginPage() {
+  const { t } = useTranslation(['admin', 'common'])
   const { login } = useAuth()
   const navigate = useNavigate()
   const [username, setUsername] = useState('')
@@ -33,7 +36,7 @@ function LoginPage() {
       await login(username, password)
       await navigate({ to: '/admin/rooms' })
     } catch {
-      setError('Invalid username or password.')
+      setError(t('login.invalidCredentials'))
     } finally {
       setLoading(false)
     }
@@ -61,17 +64,17 @@ function LoginPage() {
               <h1
                 className="font-display text-4xl leading-none tracking-[0.08em] text-cue-primary"
               >
-                VENUE TIMER
+                {t('common:venueTimer')}
               </h1>
               <p className="mt-1.5 font-mono text-[10px] font-semibold tracking-[0.3em] text-cue-muted uppercase">
-                Admin Console
+                {t('login.console')}
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="mb-1.5 block font-mono text-[10px] font-semibold tracking-widest text-cue-muted uppercase">
-                  Username
+                  {t('login.username')}
                 </label>
                 <input
                   type="text"
@@ -80,13 +83,13 @@ function LoginPage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="w-full rounded border border-cue-border bg-cue-base px-3 py-2.5 font-mono text-sm text-cue-primary placeholder:text-cue-muted/50 focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
-                  placeholder="admin"
+                  placeholder={t('login.usernamePlaceholder')}
                 />
               </div>
 
               <div>
                 <label className="mb-1.5 block font-mono text-[10px] font-semibold tracking-widest text-cue-muted uppercase">
-                  Password
+                  {t('login.password')}
                 </label>
                 <input
                   type="password"
@@ -113,15 +116,18 @@ function LoginPage() {
                 disabled={loading || !username || !password}
                 className="mt-2 w-full rounded bg-cue-accent py-3 font-display text-base tracking-[0.12em] text-white hover:bg-[#0044AA] disabled:opacity-50 transition-colors duration-[120ms]"
               >
-                {loading ? 'SIGNING IN…' : 'SIGN IN →'}
+                {loading ? t('login.signingIn') : t('login.signIn')}
               </button>
             </form>
           </div>
         </div>
 
-        <p className="mt-4 text-center font-mono text-[10px] text-cue-muted/60 tracking-wider">
-          VENUE TIMER · ADMIN ONLY
-        </p>
+        <div className="mt-4 flex flex-col items-center gap-3">
+          <LanguageSwitcher />
+          <p className="text-center font-mono text-[10px] text-cue-muted/60 tracking-wider">
+            {t('login.footer')}
+          </p>
+        </div>
       </div>
     </div>
   )

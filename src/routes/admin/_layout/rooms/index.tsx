@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { useApi } from '../../../../services/api'
 import { RoomCard } from '../../../../components/admin/RoomCard'
 import { CreateRoomForm } from '../../../../components/admin/CreateRoomForm'
@@ -10,6 +11,7 @@ export const Route = createFileRoute('/admin/_layout/rooms/')({
 })
 
 function RoomsPage() {
+  const { t } = useTranslation('admin')
   const api = useApi()
   const queryClient = useQueryClient()
 
@@ -26,10 +28,10 @@ function RoomsPage() {
     <div className="mx-auto max-w-7xl px-5 py-6 bg-dot-grid min-h-full">
       <div className="mb-6">
         <h2 className="font-display text-2xl leading-none tracking-wider text-cue-primary">
-          ROOMS
+          {t('rooms.heading')}
         </h2>
         <p className="mt-1 font-mono text-xs text-cue-muted">
-          Manage halls, stages, and workshop spaces
+          {t('rooms.subtitle')}
         </p>
       </div>
 
@@ -51,16 +53,16 @@ function RoomsPage() {
       {isError && (
         <div className="rounded-lg border border-[#FF2040]/30 bg-[#FF2040]/5 px-5 py-4">
           <p className="font-mono text-sm text-[#FF2040]">
-            Failed to load rooms. Check that the backend is running.
+            {t('rooms.loadError')}
           </p>
         </div>
       )}
 
       {rooms && rooms.length === 0 && (
         <div className="rounded-lg border border-dashed border-cue-border py-16 text-center">
-          <p className="font-display text-lg tracking-wider text-cue-muted">NO ROOMS YET</p>
+          <p className="font-display text-lg tracking-wider text-cue-muted">{t('rooms.emptyTitle')}</p>
           <p className="mt-1 font-mono text-xs text-cue-muted/60">
-            Create your first room using the form above.
+            {t('rooms.emptyHint')}
           </p>
         </div>
       )}

@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useApi } from '../../services/api'
 import type { Room, RoomUpdatePayload, Timer } from '../../services/api'
 import { useRoomSocket } from '../../hooks/useRoomSocket'
@@ -34,6 +35,7 @@ const WS_DOT: Record<'connecting' | 'connected' | 'disconnected', string> = {
 }
 
 export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
+  const { t } = useTranslation(['admin', 'common'])
   const api = useApi()
   const [room, setRoom] = useState<Room>(initialRoom)
   const [nextTimer, setNextTimer] = useState<Timer | null>(null)
@@ -179,13 +181,13 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
             )}
             {room.auto_advance && (
               <span className="rounded border border-cue-accent/40 px-2 py-0.5 font-mono text-[10px] font-semibold tracking-widest text-cue-accent uppercase">
-                AUTO
+                {t('auto')}
               </span>
             )}
           </div>
           <span
             className="h-2 w-2 rounded-full shrink-0"
-            title={`WebSocket: ${status}`}
+            title={t('controls.websocket', { status })}
             style={{ backgroundColor: wsDotColor, boxShadow: `0 0 6px ${wsDotColor}` }}
           />
         </div>
@@ -196,10 +198,10 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
             <div className="flex items-center justify-between gap-4">
               <div className="min-w-0">
                 <div className="font-mono text-[10px] tracking-widest text-[#FFAA00] uppercase">
-                  Handover — Up Next
+                  {t('controls.handoverUpNext')}
                 </div>
                 <div className="mt-1 font-display text-lg leading-none tracking-wide text-cue-primary truncate">
-                  {nextTimer ? (nextTimer.session_title || nextTimer.name) : '—'}
+                  {nextTimer ? (nextTimer.session_title || nextTimer.name) : t('common:dash')}
                 </div>
                 {nextTimer?.speaker_name && (
                   <div className="mt-0.5 font-mono text-xs text-cue-muted truncate">
@@ -217,10 +219,10 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
         {room.state === 'complete' && (
           <div className="border-b border-cue-accent/40 bg-cue-accent/5 px-5 py-3">
             <div className="font-mono text-[10px] tracking-widest text-cue-accent uppercase">
-              Runsheet Complete
+              {t('controls.runsheetComplete')}
             </div>
             <div className="mt-1 font-display text-base text-cue-primary">
-              All sessions have finished.
+              {t('controls.allFinished')}
             </div>
           </div>
         )}
@@ -230,10 +232,10 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
           <div className="flex items-start justify-between gap-2">
             <div className="flex flex-col gap-1.5 min-w-0">
               <span className="font-mono text-[10px] tracking-widest text-cue-muted uppercase">
-                {isSchedule ? 'Current Session' : 'Timer'}
+                {isSchedule ? t('controls.currentSession') : t('controls.timer')}
               </span>
               <span className="font-display text-xl leading-none tracking-wide text-cue-primary truncate">
-                {current ? (current.session_title || current.name) : '— No timer —'}
+                {current ? (current.session_title || current.name) : t('controls.noTimer')}
               </span>
               {current?.speaker_name && (
                 <span className="font-mono text-xs text-cue-muted truncate">
@@ -250,7 +252,7 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
               className="font-mono text-5xl font-semibold tabular-nums leading-none tracking-tight"
               style={{ color: digitColor }}
             >
-              {current ? timerDisplay : '—'}
+              {current ? timerDisplay : t('common:dash')}
             </span>
           </div>
 
@@ -264,7 +266,7 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
                     disabled={acting}
                     className="flex-1 rounded bg-cue-accent px-3 py-2 font-display text-sm tracking-widest text-white hover:bg-[#0044AA] disabled:opacity-50 transition-colors duration-[120ms]"
                   >
-                    START
+                    {t('controls.start')}
                   </button>
                 )}
                 {(current.state === 'running' || current.state === 'overtime') && (
@@ -273,7 +275,7 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
                     disabled={acting}
                     className="flex-1 rounded border border-[#FFAA00] px-3 py-2 font-display text-sm tracking-widest text-[#FFAA00] hover:bg-[#FFAA00]/10 disabled:opacity-50 transition-colors duration-[120ms]"
                   >
-                    PAUSE
+                    {t('controls.pause')}
                   </button>
                 )}
                 {current.state === 'paused' && (
@@ -282,7 +284,7 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
                     disabled={acting}
                     className="flex-1 rounded bg-cue-accent px-3 py-2 font-display text-sm tracking-widest text-white hover:bg-[#0044AA] disabled:opacity-50 transition-colors duration-[120ms]"
                   >
-                    RESUME
+                    {t('controls.resume')}
                   </button>
                 )}
                 {current.state !== 'idle' && (
@@ -291,7 +293,7 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
                     disabled={acting}
                     className="rounded border border-cue-border px-3 py-2 font-display text-sm tracking-widest text-cue-muted hover:border-cue-primary hover:text-cue-primary disabled:opacity-50 transition-colors duration-[120ms]"
                   >
-                    RESET
+                    {t('controls.reset')}
                   </button>
                 )}
               </div>
@@ -310,7 +312,7 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
                         : 'border border-[#FFAA00] text-[#FFAA00] hover:bg-[#FFAA00]/10',
                     ].join(' ')}
                   >
-                    {room.poi_offered_active ? '● POI LIVE — CLEAR & RESUME' : 'OFFER POI (PAUSE CLOCK)'}
+                    {room.poi_offered_active ? t('controls.poiLive') : t('controls.offerPoi')}
                   </button>
                 )}
 
@@ -319,7 +321,7 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
                 <div className="rounded border border-cue-border bg-cue-base/50 p-3 space-y-2.5">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="font-mono text-[10px] font-semibold tracking-widest text-cue-muted uppercase mr-1">
-                      Adjust
+                      {t('controls.adjust')}
                     </span>
                     {([-30, -10, -5, 5, 10, 30] as const).map((delta) => (
                       <button
@@ -342,13 +344,13 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
 
                   <form onSubmit={handleOverride} className="flex items-center gap-2">
                     <span className="font-mono text-[10px] font-semibold tracking-widest text-cue-muted uppercase whitespace-nowrap">
-                      Override
+                      {t('controls.override')}
                     </span>
                     <input
                       type="text"
                       value={overrideInput}
                       onChange={(e) => setOverrideInput(e.target.value)}
-                      placeholder="MM:SS"
+                      placeholder={t('controls.overridePlaceholder')}
                       className="w-20 rounded border border-cue-border bg-cue-surface px-2 py-1 font-mono text-sm text-cue-primary placeholder:text-cue-muted/40 focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
                     />
                     <button
@@ -356,7 +358,7 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
                       disabled={acting || !overrideInput.trim()}
                       className="rounded border border-cue-border px-2 py-1 font-mono text-xs text-cue-muted hover:border-cue-accent hover:text-cue-accent disabled:opacity-50 transition-colors duration-[120ms]"
                     >
-                      SET
+                      {t('controls.set')}
                     </button>
                   </form>
                 </div>
@@ -372,14 +374,14 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
                 disabled={acting || currentIndex <= 0}
                 className="rounded border border-cue-border px-3 py-1.5 font-display text-xs tracking-widest text-cue-muted hover:border-cue-primary hover:text-cue-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-[120ms]"
               >
-                ← PREV
+                {t('controls.prev')}
               </button>
               <button
                 onClick={handleAdvance}
                 disabled={acting || room.state === 'complete' || room.timers.length === 0}
                 className="rounded border border-cue-accent px-3 py-1.5 font-display text-xs tracking-widest text-cue-accent hover:bg-cue-accent/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-[120ms]"
               >
-                NEXT →
+                {t('controls.next')}
               </button>
             </div>
           )}
@@ -392,12 +394,12 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
         <div className="rounded-lg border border-cue-border bg-cue-surface p-4 shadow-sm">
           <div className="mb-2 flex items-center justify-between">
             <span className="font-mono text-[10px] font-semibold tracking-widest text-cue-muted uppercase">
-              Message Overlay
+              {t('controls.messageOverlay')}
             </span>
             <Toggle
               checked={room.message_active}
               onChange={handleMessageToggle}
-              label="Toggle message overlay"
+              label={t('controls.toggleMessage')}
             />
           </div>
           <input
@@ -405,7 +407,7 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
             value={messageText}
             onChange={(e) => setMessageText(e.target.value)}
             onBlur={handleMessageBlur}
-            placeholder="Enter message…"
+            placeholder={t('controls.messagePlaceholder')}
             className="w-full rounded border border-cue-border bg-cue-base px-2 py-1.5 font-mono text-sm text-cue-primary placeholder:text-cue-muted/50 focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
           />
         </div>
@@ -414,12 +416,12 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
         <div className="rounded-lg border border-[#FF2040]/30 bg-[#FF2040]/[0.03] p-4 shadow-sm">
           <div className="mb-2 flex items-center justify-between">
             <span className="font-mono text-[10px] font-semibold tracking-widest text-[#FF2040]/70 uppercase">
-              Emergency
+              {t('controls.emergency')}
             </span>
             <Toggle
               checked={room.emergency_active}
               onChange={handleEmergencyToggle}
-              label="Toggle emergency overlay"
+              label={t('controls.toggleEmergency')}
             />
           </div>
           <input
@@ -427,7 +429,7 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
             value={emergencyText}
             onChange={(e) => setEmergencyText(e.target.value)}
             onBlur={handleEmergencyBlur}
-            placeholder="Emergency message…"
+            placeholder={t('controls.emergencyPlaceholder')}
             className="w-full rounded border border-[#FF2040]/30 bg-cue-base px-2 py-1.5 font-mono text-sm text-cue-primary placeholder:text-[#FF2040]/40 focus:border-[#FF2040] focus:outline-none transition-colors duration-[120ms]"
           />
         </div>
@@ -437,71 +439,71 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
       <div className="rounded-lg border border-cue-border bg-cue-surface p-4 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
           <span className="font-mono text-[10px] font-semibold tracking-widest text-cue-muted uppercase">
-            Display Chrome
+            {t('controls.displayChrome')}
           </span>
         </div>
 
         <div className="mb-3 flex items-center justify-between rounded border border-cue-accent/30 bg-cue-accent/[0.04] px-3 py-2">
           <div className="flex flex-col">
-            <span className="font-mono text-xs text-cue-primary">Minimal Mode</span>
+            <span className="font-mono text-xs text-cue-primary">{t('controls.minimalMode')}</span>
             <span className="font-mono text-[10px] text-cue-muted">
-              Hides strips and disconnect badge regardless of toggles below.
+              {t('controls.minimalModeHint')}
             </span>
           </div>
           <Toggle
             checked={room.minimal_mode ?? false}
             onChange={(next) => patchRoomField({ minimal_mode: next })}
-            label="Toggle minimal mode"
+            label={t('controls.toggleMinimal')}
           />
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="flex items-center justify-between">
-            <span className="font-mono text-xs text-cue-primary">Show Top Strip</span>
+            <span className="font-mono text-xs text-cue-primary">{t('controls.showTopStrip')}</span>
             <Toggle
               checked={room.show_top_strip ?? true}
               onChange={(next) => patchRoomField({ show_top_strip: next })}
-              label="Toggle top strip visibility"
+              label={t('controls.toggleTopStrip')}
             />
           </div>
           <div className="flex items-center justify-between">
-            <span className="font-mono text-xs text-cue-primary">Show Bottom Strip</span>
+            <span className="font-mono text-xs text-cue-primary">{t('controls.showBottomStrip')}</span>
             <Toggle
               checked={room.show_bottom_strip ?? true}
               onChange={(next) => patchRoomField({ show_bottom_strip: next })}
-              label="Toggle bottom strip visibility"
+              label={t('controls.toggleBottomStrip')}
             />
           </div>
           <div className="flex items-center justify-between">
-            <span className="font-mono text-xs text-cue-primary">Show Session Title</span>
+            <span className="font-mono text-xs text-cue-primary">{t('controls.showSessionTitle')}</span>
             <Toggle
               checked={room.show_session_title ?? true}
               onChange={(next) => patchRoomField({ show_session_title: next })}
-              label="Toggle session title visibility"
+              label={t('controls.toggleSessionTitle')}
             />
           </div>
           <div className="flex items-center justify-between">
-            <span className="font-mono text-xs text-cue-primary">Show Speaker Name</span>
+            <span className="font-mono text-xs text-cue-primary">{t('controls.showSpeakerName')}</span>
             <Toggle
               checked={room.show_speaker_name ?? true}
               onChange={(next) => patchRoomField({ show_speaker_name: next })}
-              label="Toggle speaker name visibility"
+              label={t('controls.toggleSpeakerName')}
             />
           </div>
           <div className="flex items-center justify-between">
-            <span className="font-mono text-xs text-cue-primary">Show Disconnect Badge</span>
+            <span className="font-mono text-xs text-cue-primary">{t('controls.showDisconnectBadge')}</span>
             <Toggle
               checked={room.show_disconnect_badge ?? true}
               onChange={(next) => patchRoomField({ show_disconnect_badge: next })}
-              label="Toggle disconnect badge visibility"
+              label={t('controls.toggleDisconnectBadge')}
             />
           </div>
           <div className="flex items-center justify-between">
-            <span className="font-mono text-xs text-cue-primary">Show Seconds on Clock</span>
+            <span className="font-mono text-xs text-cue-primary">{t('controls.showSecondsOnClock')}</span>
             <Toggle
               checked={room.show_seconds_on_clock ?? true}
               onChange={(next) => patchRoomField({ show_seconds_on_clock: next })}
-              label="Toggle seconds on wall clock"
+              label={t('controls.toggleSecondsOnClock')}
             />
           </div>
         </div>

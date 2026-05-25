@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useApi } from '../../services/api'
 import type { Room, Timer, Zone, ZoneCreatePayload, ZoneUpdatePayload } from '../../services/api'
 
@@ -25,6 +26,7 @@ interface RowProps {
 }
 
 function ZoneRow({ zone, acting, onPatch, onDelete }: RowProps) {
+  const { t } = useTranslation('admin')
   const [label, setLabel] = useState(zone.label)
   const [threshold, setThreshold] = useState(String(zone.threshold))
   const [color, setColor] = useState(zone.color)
@@ -94,7 +96,7 @@ function ZoneRow({ zone, acting, onPatch, onDelete }: RowProps) {
           disabled={acting}
           className="rounded border border-[#FF2040]/40 px-2 py-1 font-mono text-[10px] text-[#FF2040]/80 uppercase tracking-widest hover:border-[#FF2040] hover:text-[#FF2040] disabled:opacity-30 transition-colors duration-[120ms]"
         >
-          Del
+          {t('zones.del')}
         </button>
       </div>
     </div>
@@ -115,6 +117,7 @@ interface SectionProps {
 function ZoneSection({
   title, description, zones, acting, onCreate, onPatch, onDelete, trailing,
 }: SectionProps) {
+  const { t } = useTranslation(['admin', 'common'])
   const sorted = [...zones].sort((a, b) => b.threshold - a.threshold)
 
   return (
@@ -136,23 +139,23 @@ function ZoneSection({
             disabled={acting}
             className="rounded border border-cue-accent px-3 py-1 font-display text-xs tracking-widest text-cue-accent hover:bg-cue-accent/10 disabled:opacity-50 transition-colors duration-[120ms]"
           >
-            + ZONE
+            {t('zones.addZone')}
           </button>
         </div>
       </div>
 
       {sorted.length === 0 ? (
         <p className="rounded border border-dashed border-cue-border px-3 py-4 text-center font-mono text-[11px] text-cue-muted">
-          No zones defined.
+          {t('zones.empty')}
         </p>
       ) : (
         <>
           <div className="hidden grid-cols-12 gap-2 px-3 font-mono text-[9px] font-semibold tracking-widest text-cue-muted/70 uppercase sm:grid">
-            <span className="col-span-3">Label</span>
-            <span className="col-span-2">Threshold</span>
-            <span className="col-span-2">Colour</span>
-            <span className="col-span-4">Tint Opacity</span>
-            <span className="col-span-1 text-right">—</span>
+            <span className="col-span-3">{t('zones.colLabel')}</span>
+            <span className="col-span-2">{t('zones.colThreshold')}</span>
+            <span className="col-span-2">{t('zones.colColour')}</span>
+            <span className="col-span-4">{t('zones.colTintOpacity')}</span>
+            <span className="col-span-1 text-right">{t('common:dash')}</span>
           </div>
           <div className="space-y-1.5">
             {sorted.map((z) => (
@@ -172,6 +175,7 @@ function ZoneSection({
 }
 
 export function ZoneEditor({ room, onMutated }: ZoneEditorProps) {
+  const { t } = useTranslation('admin')
   const api = useApi()
   const [acting, setActing] = useState(false)
 
@@ -185,7 +189,7 @@ export function ZoneEditor({ room, onMutated }: ZoneEditorProps) {
       const next = (room.zones.length
         ? Math.max(...room.zones.map((z) => z.order)) + 1
         : 0)
-      await api.roomZones.create(room.id, DEFAULTS(next))
+      await api.roomZones.create(room.id, { ...DEFAULTS(next), label: t('zones.newZone') })
       onMutated()
     } finally {
       setActing(false)
@@ -219,7 +223,7 @@ export function ZoneEditor({ room, onMutated }: ZoneEditorProps) {
       const next = (overrideZones.length
         ? Math.max(...overrideZones.map((z) => z.order)) + 1
         : 0)
-      await api.timerZones.create(room.id, current.id, DEFAULTS(next))
+      await api.timerZones.create(room.id, current.id, { ...DEFAULTS(next), label: t('zones.newZone') })
       onMutated()
     } finally {
       setActing(false)
@@ -269,7 +273,7 @@ export function ZoneEditor({ room, onMutated }: ZoneEditorProps) {
 
   async function revertToDefaults() {
     if (!current) return
-    if (!confirm('Revert this timer to room default zones? Its overrides will be deleted.')) return
+    if (!confirm(t('zones.revertConfirm'))) return
     setActing(true)
     try {
       for (const z of overrideZones) {
@@ -285,17 +289,16 @@ export function ZoneEditor({ room, onMutated }: ZoneEditorProps) {
     <div className="space-y-6 rounded-lg border border-cue-border bg-cue-surface px-5 py-4 shadow-sm">
       <div>
         <h3 className="font-display text-lg leading-none tracking-wider text-cue-primary">
-          ZONES
+          {t('zones.heading')}
         </h3>
         <p className="mt-1 font-mono text-[10px] text-cue-muted tracking-widest uppercase">
-          Colour bands that change the display as time runs low. Active zone = first one
-          (highest threshold) whose threshold the remaining time falls below.
+          {t('zones.description')}
         </p>
       </div>
 
       <ZoneSection
-        title="Room Defaults"
-        description="Inherited by every timer unless overridden"
+        title={t('zones.roomDefaults')}
+        description={t('zones.roomDefaultsDesc')}
         zones={room.zones}
         acting={acting}
         onCreate={createRoomZone}
@@ -305,11 +308,11 @@ export function ZoneEditor({ room, onMutated }: ZoneEditorProps) {
 
       {current && (
         <ZoneSection
-          title={`Current Session — ${current.session_title || current.name}`}
+          title={t('zones.currentSession', { title: current.session_title || current.name })}
           description={
             hasOverride
-              ? 'Override active — these zones replace the room defaults for this session.'
-              : 'Inheriting room defaults — add a zone to start overriding.'
+              ? t('zones.overrideActiveDesc')
+              : t('zones.inheritingDesc')
           }
           zones={overrideZones}
           acting={acting}
@@ -325,7 +328,7 @@ export function ZoneEditor({ room, onMutated }: ZoneEditorProps) {
                   disabled={acting}
                   className="rounded border border-[#FF2040]/40 px-3 py-1 font-mono text-[10px] tracking-widest text-[#FF2040]/80 uppercase hover:border-[#FF2040] hover:text-[#FF2040] disabled:opacity-50 transition-colors duration-[120ms]"
                 >
-                  Revert to defaults
+                  {t('zones.revert')}
                 </button>
               )}
               {!hasOverride && room.zones.length > 0 && (
@@ -335,7 +338,7 @@ export function ZoneEditor({ room, onMutated }: ZoneEditorProps) {
                   disabled={acting}
                   className="rounded border border-cue-border px-3 py-1 font-mono text-[10px] tracking-widest text-cue-muted uppercase hover:border-cue-accent hover:text-cue-accent disabled:opacity-50 transition-colors duration-[120ms]"
                 >
-                  Copy from defaults
+                  {t('zones.copyDefaults')}
                 </button>
               )}
             </>

@@ -1,0 +1,21 @@
+{
+  "venueTimer": "VENUE TIMER",
+  "cancel": "Άκυρο",
+  "dash": "—",
+  "mode": {
+    "simple": "απλό",
+    "schedule": "πρόγραμμα"
+  },
+  "timerState": {
+    "idle": "ΑΝΑΜΟΝΗ",
+    "running": "ΣΕ ΕΞΕΛΙΞΗ",
+    "paused": "ΠΑΥΣΗ",
+    "overtime": "ΥΠΕΡΒΑΣΗ"
+  },
+  "roomState": {
+    "idle": "ΑΝΑΜΟΝΗ",
+    "live": "ΖΩΝΤΑΝΑ",
+    "handover": "ΜΕΤΑΒΑΣΗ",
+    "complete": "ΟΛΟΚΛΗΡΩΘΗΚΕ"
+  }
+}

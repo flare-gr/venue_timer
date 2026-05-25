@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
 import type { Room } from '../../services/api'
 import { RoomStateBadge } from './StateBadge'
 
@@ -8,7 +9,8 @@ interface RoomCardProps {
 }
 
 export function RoomCard({ room, style }: RoomCardProps) {
-  const current = room.timers.find((t) => t.id === room.current_timer) ?? null
+  const { t } = useTranslation(['admin', 'common'])
+  const current = room.timers.find((ti) => ti.id === room.current_timer) ?? null
 
   return (
     <Link
@@ -43,14 +45,14 @@ export function RoomCard({ room, style }: RoomCardProps) {
         {/* Mode + counts */}
         <div className="flex flex-wrap items-center gap-2">
           <span className="rounded border border-cue-border px-2 py-0.5 font-mono text-[10px] font-semibold tracking-widest text-cue-muted uppercase">
-            {room.mode}
+            {t(`common:mode.${room.mode}`)}
           </span>
           <span className="font-mono text-[10px] text-cue-muted">
-            {room.timers.length} {room.timers.length === 1 ? 'TIMER' : 'TIMERS'}
+            {t('roomCard.timer', { count: room.timers.length })}
           </span>
           {room.mode === 'schedule' && room.auto_advance && (
             <span className="rounded border border-cue-accent/40 px-2 py-0.5 font-mono text-[10px] font-semibold tracking-widest text-cue-accent uppercase">
-              AUTO
+              {t('auto')}
             </span>
           )}
         </div>
@@ -58,10 +60,10 @@ export function RoomCard({ room, style }: RoomCardProps) {
         {/* Current timer */}
         <div className="rounded border border-cue-border bg-cue-base/50 p-3">
           <div className="font-mono text-[10px] font-semibold tracking-widest text-cue-muted uppercase">
-            Current
+            {t('roomCard.current')}
           </div>
           <div className="mt-1 font-display text-base tracking-wide text-cue-primary truncate">
-            {current ? (current.session_title || current.name) : '—'}
+            {current ? (current.session_title || current.name) : t('common:dash')}
           </div>
           {current?.speaker_name && (
             <div className="mt-0.5 font-mono text-xs text-cue-muted truncate">
@@ -72,7 +74,7 @@ export function RoomCard({ room, style }: RoomCardProps) {
 
         {/* Footer hint */}
         <div className="border-t border-cue-border pt-2 font-mono text-[10px] tracking-widest text-cue-muted/70 uppercase group-hover:text-cue-accent transition-colors duration-[120ms]">
-          Open controls →
+          {t('roomCard.openControls')}
         </div>
       </div>
     </Link>

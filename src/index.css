@@ -1,5 +1,7 @@
 @import "tailwindcss";
-@import "@fontsource/bebas-neue";
+@import "@fontsource/roboto/400.css";
+@import "@fontsource/roboto/500.css";
+@import "@fontsource/roboto/700.css";
 @import "@fontsource/jetbrains-mono";
 @import "@fontsource/jetbrains-mono/400.css";
 @import "@fontsource/jetbrains-mono/600.css";
@@ -19,7 +21,7 @@
   --color-zone-red:   #FF2040;
 
   /* Fonts */
-  --font-display: "Bebas Neue", Impact, "Arial Narrow", sans-serif;
+  --font-display: "Roboto", "Helvetica Neue", Arial, sans-serif;
   --font-mono:    "JetBrains Mono", "Fira Code", ui-monospace, monospace;
 }
 
@@ -100,7 +102,8 @@ html[data-theme="rehearsal"] {
 @layer components {
   .timer-digits {
     font-family: var(--font-display);
-    font-size: clamp(4rem, 37vw, 40rem);
+    font-weight: 700;
+    font-size: clamp(2.5rem, 21vw, 26rem);
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.05em;
     line-height: 1;
@@ -108,7 +111,7 @@ html[data-theme="rehearsal"] {
   }
 
   .timer-digits-with-message {
-    font-size: clamp(3.5rem, 33vw, 36rem);
+    font-size: clamp(2.2rem, 18vw, 23rem);
   }
 
   .display-stage {

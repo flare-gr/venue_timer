@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
 import { useApi } from '../../services/api'
 import type { RoomCreatePayload, RoomMode } from '../../services/api'
 import { Toggle } from '../ui/Toggle'
@@ -19,6 +20,7 @@ const DEFAULTS: RoomCreatePayload = {
 }
 
 export function CreateRoomForm({ onCreated }: CreateRoomFormProps) {
+  const { t } = useTranslation(['admin', 'common'])
   const api = useApi()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
@@ -42,7 +44,7 @@ export function CreateRoomForm({ onCreated }: CreateRoomFormProps) {
       onCreated()
       void navigate({ to: '/admin/rooms/$roomId', params: { roomId: String(room.id) } })
     } catch {
-      setError('Failed to create room.')
+      setError(t('createRoom.createError'))
     } finally {
       setLoading(false)
     }
@@ -64,7 +66,7 @@ export function CreateRoomForm({ onCreated }: CreateRoomFormProps) {
             +
           </span>
           <span className="font-mono text-sm font-semibold tracking-widest text-cue-muted uppercase">
-            New Room
+            {t('createRoom.toggle')}
           </span>
         </div>
         <span
@@ -80,50 +82,50 @@ export function CreateRoomForm({ onCreated }: CreateRoomFormProps) {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <label className="mb-1 block font-mono text-xs font-medium tracking-widest text-cue-muted uppercase">
-                Name <span className="text-[#FF2040]">*</span>
+                {t('createRoom.name')} <span className="text-[#FF2040]">*</span>
               </label>
               <input
                 type="text"
                 required
                 value={form.name}
                 onChange={(e) => update('name', e.target.value)}
-                placeholder="e.g. Main Hall"
+                placeholder={t('createRoom.namePlaceholder')}
                 className="w-full rounded border border-cue-border bg-cue-base px-3 py-2 font-mono text-sm text-cue-primary placeholder:text-cue-muted/50 focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
               />
             </div>
 
             <div>
               <label className="mb-1 block font-mono text-xs font-medium tracking-widest text-cue-muted uppercase">
-                Mode
+                {t('createRoom.mode')}
               </label>
               <select
                 value={form.mode}
                 onChange={(e) => update('mode', e.target.value as RoomMode)}
                 className="w-full rounded border border-cue-border bg-cue-base px-3 py-2 font-mono text-sm text-cue-primary focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
               >
-                <option value="simple">Simple (single ad-hoc timer)</option>
-                <option value="schedule">Schedule (runsheet of timers)</option>
+                <option value="simple">{t('createRoom.modeSimple')}</option>
+                <option value="schedule">{t('createRoom.modeSchedule')}</option>
               </select>
             </div>
 
             <div>
               <label className="mb-1 block font-mono text-xs font-medium tracking-widest text-cue-muted uppercase">
-                Font Size
+                {t('createRoom.fontSize')}
               </label>
               <select
                 value={form.font_size}
                 onChange={(e) => update('font_size', e.target.value as RoomCreatePayload['font_size'])}
                 className="w-full rounded border border-cue-border bg-cue-base px-3 py-2 font-mono text-sm text-cue-primary focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
               >
-                <option value="small">Small</option>
-                <option value="medium">Medium</option>
-                <option value="large">Large</option>
+                <option value="small">{t('fontSizes.small')}</option>
+                <option value="medium">{t('fontSizes.medium')}</option>
+                <option value="large">{t('fontSizes.large')}</option>
               </select>
             </div>
 
             <div>
               <label className="mb-1 block font-mono text-xs font-medium tracking-widest text-cue-muted uppercase">
-                Accent Colour
+                {t('createRoom.accentColour')}
               </label>
               <div className="flex items-center gap-2">
                 <input
@@ -140,16 +142,16 @@ export function CreateRoomForm({ onCreated }: CreateRoomFormProps) {
               <Toggle
                 checked={form.show_clock ?? true}
                 onChange={(v) => update('show_clock', v)}
-                label="Show wall clock"
+                label={t('createRoom.showClock')}
               />
-              <span className="font-mono text-xs text-cue-muted">Show wall clock</span>
+              <span className="font-mono text-xs text-cue-muted">{t('createRoom.showClock')}</span>
             </div>
 
             {isSchedule && (
               <>
                 <div>
                   <label className="mb-1 block font-mono text-xs font-medium tracking-widest text-cue-muted uppercase">
-                    Default Handover (sec)
+                    {t('createRoom.defaultHandover')}
                   </label>
                   <input
                     type="number"
@@ -164,9 +166,9 @@ export function CreateRoomForm({ onCreated }: CreateRoomFormProps) {
                   <Toggle
                     checked={form.auto_advance ?? false}
                     onChange={(v) => update('auto_advance', v)}
-                    label="Auto-advance"
+                    label={t('createRoom.autoAdvance')}
                   />
-                  <span className="font-mono text-xs text-cue-muted">Auto-advance runsheet</span>
+                  <span className="font-mono text-xs text-cue-muted">{t('createRoom.autoAdvance')}</span>
                 </div>
               </>
             )}
@@ -182,14 +184,14 @@ export function CreateRoomForm({ onCreated }: CreateRoomFormProps) {
               disabled={loading || !form.name.trim()}
               className="rounded bg-cue-accent px-5 py-2 font-display text-sm tracking-widest text-white hover:bg-[#0044AA] disabled:opacity-50 transition-colors duration-[120ms]"
             >
-              {loading ? 'CREATING…' : 'CREATE ROOM'}
+              {loading ? t('createRoom.creating') : t('createRoom.create')}
             </button>
             <button
               type="button"
               onClick={() => { setOpen(false); setForm(DEFAULTS); setError(null) }}
               className="font-mono text-xs text-cue-muted hover:text-cue-primary transition-colors duration-[120ms]"
             >
-              Cancel
+              {t('common:cancel')}
             </button>
           </div>
         </form>

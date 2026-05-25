@@ -44,7 +44,7 @@ network interruptions without losing the current timer state from memory.
 | Axios | latest | HTTP client with JWT interceptors |
 | Zustand | latest | Client state (WS status, display prefs) |
 | vite-plugin-pwa | latest | Service worker, web manifest, offline cache |
-| @fontsource/bebas-neue | latest | Display font (self-hosted, no FOUT) |
+| @fontsource/roboto | latest | Display font (self-hosted, no FOUT; Greek + Latin) |
 | @fontsource/jetbrains-mono | latest | Mono font (self-hosted) |
 
 ---
@@ -131,7 +131,7 @@ values per theme by adding data-attribute selectors.
   --color-zone-red:   #FF2040;
 
   /* Fonts */
-  --font-display: "Bebas Neue", Impact, "Arial Narrow", sans-serif;
+  --font-display: "Roboto", "Helvetica Neue", Arial, sans-serif;
   --font-mono:    "JetBrains Mono", "Fira Code", ui-monospace, monospace;
 }
 
@@ -319,7 +319,7 @@ Standard transition durations:
 5. **Display routes are unauthenticated.** Never attach a JWT to a WebSocket opened from
    a display route. Only admin routes send the auth frame on open.
 
-6. **Fonts are self-hosted via `@fontsource`.** Never load Bebas Neue or JetBrains Mono
+6. **Fonts are self-hosted via `@fontsource`.** Never load Roboto or JetBrains Mono
    from Google Fonts or any external CDN.
 
 7. **`strict: true` in tsconfig.** Any weakening of type-safety requires an adjacent

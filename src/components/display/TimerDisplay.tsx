@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Room, Timer, Zone } from '../../services/api'
 import { useRoomSocket } from '../../hooks/useRoomSocket'
 import { useCountdown } from '../../hooks/useCountdown'
@@ -43,26 +44,27 @@ function WarningIcon() {
   )
 }
 
-function useWallClock(enabled: boolean, withSeconds: boolean): string {
+function useWallClock(enabled: boolean, withSeconds: boolean, locale: string): string {
   const [clock, setClock] = useState('')
   const rafRef = useRef<number>(0)
+  const formatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        hour: '2-digit',
+        minute: '2-digit',
+        ...(withSeconds ? { second: '2-digit' } : {}),
+      }),
+    [locale, withSeconds],
+  )
   useEffect(() => {
     if (!enabled) return
     const tick = () => {
-      const now = new Date()
-      const h = String(now.getHours()).padStart(2, '0')
-      const m = String(now.getMinutes()).padStart(2, '0')
-      if (withSeconds) {
-        const s = String(now.getSeconds()).padStart(2, '0')
-        setClock(`${h}:${m}:${s}`)
-      } else {
-        setClock(`${h}:${m}`)
-      }
+      setClock(formatter.format(new Date()))
       rafRef.current = requestAnimationFrame(tick)
     }
     rafRef.current = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(rafRef.current)
-  }, [enabled, withSeconds])
+  }, [enabled, formatter])
   return clock
 }
 
@@ -71,6 +73,7 @@ interface TimerDisplayProps {
 }
 
 export function TimerDisplay({ roomId }: TimerDisplayProps) {
+  const { t, i18n } = useTranslation('display')
   const [room, setRoom] = useState<Room | null>(null)
   const [nextTimer, setNextTimer] = useState<Timer | null>(null)
 
@@ -103,13 +106,14 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
   const wallClock = useWallClock(
     room?.show_clock ?? false,
     room?.show_seconds_on_clock ?? true,
+    i18n.resolvedLanguage ?? 'en',
   )
 
   if (notFound) {
     return (
       <div className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-cue-base">
-        <span className="font-display text-[4vw] tracking-[0.25em] text-[#FF2040]">
-          NO SUCH ROOM
+        <span className="font-display text-[2.4vw] tracking-[0.25em] text-[#FF2040]">
+          {t('noSuchRoom')}
         </span>
         <span className="font-mono text-[1.2vw] text-cue-muted">
           #{roomId}
@@ -121,8 +125,8 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
   if (room === null) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-cue-base">
-        <span className="font-display text-[3vw] tracking-[0.3em] text-cue-muted animate-fetching">
-          CONNECTING
+        <span className="font-display text-[2vw] tracking-[0.3em] text-cue-muted animate-fetching">
+          {t('connecting')}
         </span>
       </div>
     )
@@ -135,15 +139,15 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
         <WarningIcon />
         <h1
           className="font-display tracking-[0.2em] text-white animate-emergency-text text-center"
-          style={{ fontSize: 'clamp(2rem, 8vw, 8rem)' }}
+          style={{ fontSize: 'clamp(1.5rem, 5vw, 5rem)' }}
         >
-          EMERGENCY
+          {t('emergency')}
         </h1>
         <hr className="w-[20%] border-2 border-white/60" />
         {room.emergency_text && (
           <p
             className="font-display text-white animate-emergency-text max-w-[80%] text-center leading-tight"
-            style={{ fontSize: 'clamp(1rem, 4.5vw, 5rem)' }}
+            style={{ fontSize: 'clamp(0.9rem, 3vw, 3.2rem)' }}
           >
             {room.emergency_text}
           </p>
@@ -211,12 +215,12 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
     poiState === 'open' ? '#00F078' : poiState === 'offered' ? '#FFAA00' : 'var(--color-cue-muted)'
   const poiLabel =
     poiState === 'open'
-      ? 'POIs OPEN'
+      ? t('poisOpen')
       : poiState === 'offered'
-        ? 'POI OFFERED!'
+        ? t('poiOfferedExcl')
         : poiState === 'off'
-          ? 'POIs OFF'
-          : 'POIs CLOSED'
+          ? t('poisOff')
+          : t('poisClosed')
 
   return (
     <div className="fixed inset-0 bg-cue-base">
@@ -249,11 +253,11 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
           <span
             className="font-display leading-none tracking-widest truncate"
             style={{
-              fontSize: 'clamp(0.75rem, 2.2vw, 2.5rem)',
+              fontSize: 'clamp(0.7rem, 1.5vw, 1.6rem)',
               color: isOvertime ? '#FF2040' : 'var(--color-cue-primary)',
             }}
           >
-            {isOvertime ? `OVERTIME | ${room.name}` : room.name}
+            {isOvertime ? `${t('overtime')} | ${room.name}` : room.name}
           </span>
           {isLive && current && (
             (debateActive && current.role) ||
@@ -263,13 +267,13 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
             <>
               <span
                 className="font-display text-cue-muted shrink-0"
-                style={{ fontSize: 'clamp(0.6rem, 1.6vw, 1.8rem)' }}
+                style={{ fontSize: 'clamp(0.55rem, 1.1vw, 1.2rem)' }}
               >
                 |
               </span>
               <span
                 className="font-display tracking-wide text-cue-muted truncate"
-                style={{ fontSize: 'clamp(0.65rem, 1.7vw, 1.9rem)' }}
+                style={{ fontSize: 'clamp(0.6rem, 1.15vw, 1.25rem)' }}
               >
                 {debateActive && current.role && (
                   <span style={{ color: 'var(--color-cue-accent)' }}>{current.role}</span>
@@ -290,7 +294,7 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
           {showDisconnectBadge && status === 'disconnected' && (
             <span className="flex items-center gap-1.5 font-mono text-[#FF2040]" style={{ fontSize: 'clamp(0.5rem, 0.9vw, 0.8rem)' }}>
               <span className="h-1.5 w-1.5 rounded-full bg-[#FF2040] animate-fetching" />
-              RECONNECTING
+              {t('reconnecting')}
             </span>
           )}
           {room.show_clock && wallClock && (
@@ -318,16 +322,16 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
           <div className="flex flex-col items-center gap-[3%]">
             <span
               className="font-display leading-none tracking-wide text-cue-primary text-center"
-              style={{ fontSize: 'clamp(2.5rem, 11vw, 12rem)' }}
+              style={{ fontSize: 'clamp(1.8rem, 7vw, 7.5rem)' }}
             >
-              THANK YOU
+              {t('thankYou')}
             </span>
             <div className="w-[10%] h-[3px] bg-cue-accent/60" />
             <span
               className="font-mono tracking-[0.35em] text-cue-muted uppercase"
               style={{ fontSize: 'clamp(0.7rem, 1.7vw, 1.6rem)' }}
             >
-              Session Complete
+              {t('sessionComplete')}
             </span>
           </div>
         )}
@@ -339,12 +343,12 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
               className="font-mono tracking-[0.35em] text-[#FFAA00] uppercase"
               style={{ fontSize: 'clamp(0.7rem, 1.6vw, 1.5rem)' }}
             >
-              Up Next
+              {t('upNext')}
             </span>
             {nextTimer && showSessionTitle && (
               <span
                 className="font-display leading-none tracking-wide text-cue-primary text-center max-w-[90%]"
-                style={{ fontSize: 'clamp(2rem, 7vw, 7rem)' }}
+                style={{ fontSize: 'clamp(1.5rem, 4.5vw, 4.5rem)' }}
               >
                 {nextTimer.session_title || nextTimer.name}
               </span>
@@ -352,7 +356,7 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
             {nextTimer?.speaker_name && showSpeakerName && (
               <span
                 className="font-display tracking-wide text-cue-muted"
-                style={{ fontSize: 'clamp(1rem, 2.5vw, 2.5rem)' }}
+                style={{ fontSize: 'clamp(0.9rem, 1.7vw, 1.7rem)' }}
               >
                 {nextTimer.speaker_name}
               </span>
@@ -362,12 +366,12 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
                 className="font-mono tracking-[0.3em] text-cue-muted/70 uppercase"
                 style={{ fontSize: 'clamp(0.55rem, 1.1vw, 1rem)' }}
               >
-                Starting in
+                {t('startingIn')}
               </span>
               <span
                 className="font-display tabular-nums"
                 style={{
-                  fontSize: 'clamp(3rem, 16vw, 18rem)',
+                  fontSize: 'clamp(2.5rem, 10vw, 11rem)',
                   color: '#FFAA00',
                   letterSpacing: '0.05em',
                   lineHeight: 1,
@@ -392,14 +396,14 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
             )}
             <span
               className="font-display leading-none tracking-wide text-cue-primary text-center"
-              style={{ fontSize: 'clamp(2rem, 9vw, 10rem)' }}
+              style={{ fontSize: 'clamp(1.6rem, 5.5vw, 6rem)' }}
             >
               {showSessionTitle ? (current.session_title || current.name) : current.name}
             </span>
             {current.speaker_name && showSpeakerName && (
               <span
                 className="font-display tracking-wide text-cue-muted text-center"
-                style={{ fontSize: 'clamp(1rem, 2.5vw, 2.5rem)' }}
+                style={{ fontSize: 'clamp(0.9rem, 1.7vw, 1.7rem)' }}
               >
                 {current.speaker_name}
               </span>
@@ -408,14 +412,14 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
               className="font-mono tracking-[0.3em] text-cue-muted uppercase"
               style={{ fontSize: 'clamp(0.6rem, 1.5vw, 1.4rem)' }}
             >
-              WAITING TO START
+              {t('waitingToStart')}
             </span>
             <div className="w-[6%] h-[2px] bg-cue-accent/40 mt-[1%]" />
             <span
               className="font-mono tabular-nums text-cue-muted"
               style={{ fontSize: 'clamp(0.8rem, 1.3vw, 1.2rem)', opacity: 0.6 }}
             >
-              {formatDuration(current.duration)} scheduled
+              {t('scheduled', { duration: formatDuration(current.duration) })}
             </span>
           </div>
         )}
@@ -443,25 +447,25 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
               <span
                 className="font-display tracking-[0.3em] border animate-poi-offered"
                 style={{
-                  fontSize: 'clamp(0.8rem, 3vw, 3rem)',
+                  fontSize: 'clamp(0.75rem, 1.9vw, 1.9rem)',
                   padding: '0.3em 1.2em',
                   borderRadius: '2px',
                   color: '#FFAA00',
                   borderColor: '#FFAA00',
                 }}
               >
-                POI OFFERED
+                {t('poiOffered')}
               </span>
             ) : (
               <span
                 className="font-display tracking-[0.3em] border border-cue-muted text-cue-muted"
                 style={{
-                  fontSize: 'clamp(0.8rem, 3vw, 3rem)',
+                  fontSize: 'clamp(0.75rem, 1.9vw, 1.9rem)',
                   padding: '0.3em 1.2em',
                   borderRadius: '2px',
                 }}
               >
-                PAUSED
+                {t('paused')}
               </span>
             )}
           </div>
@@ -472,7 +476,7 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
           <div className="flex flex-col items-center gap-[2%]">
             <span
               className="font-display leading-none tracking-wide text-cue-primary text-center"
-              style={{ fontSize: 'clamp(2rem, 8vw, 9rem)' }}
+              style={{ fontSize: 'clamp(1.6rem, 5vw, 5.5rem)' }}
             >
               {room.name}
             </span>
@@ -480,7 +484,7 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
               className="font-mono tracking-[0.3em] text-cue-muted uppercase"
               style={{ fontSize: 'clamp(0.6rem, 1.5vw, 1.4rem)' }}
             >
-              READY
+              {t('ready')}
             </span>
           </div>
         )}
@@ -490,7 +494,7 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
           <div className="flex flex-col items-center gap-[2%]">
             <span
               className="font-display leading-none tracking-wide text-cue-primary text-center"
-              style={{ fontSize: 'clamp(2rem, 7vw, 8rem)' }}
+              style={{ fontSize: 'clamp(1.6rem, 4.5vw, 5rem)' }}
             >
               {showSessionTitle ? (current.session_title || current.name) : current.name}
             </span>
@@ -511,12 +515,12 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
             className="font-mono tracking-[0.25em] text-cue-muted border border-cue-muted shrink-0"
             style={{ fontSize: 'clamp(0.5rem, 1vw, 0.9rem)', padding: '0.2em 0.6em', opacity: 0.7 }}
           >
-            MSG
+            {t('msg')}
           </span>
           <div className="w-[2px] bg-cue-accent" style={{ height: '40%' }} />
           <span
             className="font-display text-cue-primary truncate"
-            style={{ fontSize: 'clamp(0.8rem, 4.5vh, 4rem)' }}
+            style={{ fontSize: 'clamp(0.8rem, 3.4vh, 2.8rem)' }}
           >
             {room.message_text}
           </span>
@@ -529,12 +533,12 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
         <span
           className="font-display tracking-[0.3em]"
           style={{
-            fontSize: 'clamp(0.6rem, 2vw, 2rem)',
+            fontSize: 'clamp(0.55rem, 1.3vw, 1.3rem)',
             color: isOvertime ? '#FF2040' : 'var(--color-cue-muted)',
             opacity: isOvertime ? 0.5 : 1,
           }}
         >
-          {isOvertime ? 'SESSION ENDED' : isComplete ? 'EVENT COMPLETE' : isHandover ? 'HANDOVER' : 'VENUE TIMER'}
+          {isOvertime ? t('sessionEnded') : isComplete ? t('eventComplete') : isHandover ? t('handover') : t('venueTimer')}
         </span>
       </div>
       )}
@@ -548,7 +552,7 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
         <span
           key={poiState}
           className={`animate-poi-flash flex items-center gap-[1em] font-display tracking-[0.2em]${poiState === 'offered' ? ' animate-poi-offered' : ''}`}
-          style={{ fontSize: 'clamp(0.7rem, 2.2vw, 2.2rem)', color: poiColor }}
+          style={{ fontSize: 'clamp(0.6rem, 1.4vw, 1.4rem)', color: poiColor }}
         >
           <span
             className="rounded-full shrink-0"
@@ -564,7 +568,7 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
         {(current.role || (showSpeakerName && current.speaker_name)) && (
           <span
             className="font-display tracking-wide text-cue-muted truncate ml-[3%]"
-            style={{ fontSize: 'clamp(0.6rem, 1.8vw, 1.8rem)' }}
+            style={{ fontSize: 'clamp(0.55rem, 1.15vw, 1.2rem)' }}
           >
             {current.role}
             {current.role && showSpeakerName && current.speaker_name && ' · '}

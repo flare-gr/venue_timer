@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { TimerDisplay } from '../../../components/display/TimerDisplay'
 import { ShortcutHintPopup } from '../../../components/display/ShortcutHintPopup'
 
@@ -9,6 +10,7 @@ export const Route = createFileRoute('/display/_layout/$roomId')({
 })
 
 function RoomDisplayPage() {
+  const { t } = useTranslation('display')
   const { roomId: roomIdRaw } = Route.useParams()
   const navigate = useNavigate()
   const roomId = Number(roomIdRaw)
@@ -32,8 +34,8 @@ function RoomDisplayPage() {
   if (invalidId) {
     return (
       <div className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-cue-base">
-        <span className="font-display text-[4vw] tracking-[0.25em] text-[#FF2040]">
-          INVALID ROOM
+        <span className="font-display text-[2.4vw] tracking-[0.25em] text-[#FF2040]">
+          {t('invalidRoom')}
         </span>
         <span className="font-mono text-[1.2vw] text-cue-muted">/{roomIdRaw}</span>
       </div>

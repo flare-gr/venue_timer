@@ -1,0 +1,21 @@
+{
+  "venueTimer": "VENUE TIMER",
+  "cancel": "Cancel",
+  "dash": "—",
+  "mode": {
+    "simple": "simple",
+    "schedule": "schedule"
+  },
+  "timerState": {
+    "idle": "IDLE",
+    "running": "RUNNING",
+    "paused": "PAUSED",
+    "overtime": "OVERTIME"
+  },
+  "roomState": {
+    "idle": "IDLE",
+    "live": "LIVE",
+    "handover": "HANDOVER",
+    "complete": "COMPLETE"
+  }
+}

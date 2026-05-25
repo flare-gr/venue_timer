@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   DndContext,
   closestCenter,
@@ -53,6 +54,7 @@ function RunsheetRow({
   timer, index, total, isCurrent, acting,
   onMoveUp, onMoveDown, onSkipTo, onEdit, onDelete,
 }: RowProps) {
+  const { t } = useTranslation('admin')
   const {
     attributes, listeners, setNodeRef, transform, transition, isDragging,
   } = useSortable({ id: timer.id })
@@ -75,7 +77,7 @@ function RunsheetRow({
       {/* Drag handle */}
       <button
         type="button"
-        aria-label="Drag to reorder"
+        aria-label={t('runsheet.dragToReorder')}
         className="shrink-0 cursor-grab touch-none text-cue-muted hover:text-cue-primary transition-colors duration-[120ms] active:cursor-grabbing"
         {...attributes}
         {...listeners}
@@ -99,7 +101,7 @@ function RunsheetRow({
       <div className="flex flex-col gap-0.5 shrink-0">
         <button
           type="button"
-          aria-label="Move up"
+          aria-label={t('runsheet.moveUp')}
           onClick={onMoveUp}
           disabled={acting || index === 0}
           className="rounded border border-cue-border px-1 leading-none text-cue-muted hover:border-cue-accent hover:text-cue-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-[120ms]"
@@ -108,7 +110,7 @@ function RunsheetRow({
         </button>
         <button
           type="button"
-          aria-label="Move down"
+          aria-label={t('runsheet.moveDown')}
           onClick={onMoveDown}
           disabled={acting || index === total - 1}
           className="rounded border border-cue-border px-1 leading-none text-cue-muted hover:border-cue-accent hover:text-cue-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-[120ms]"
@@ -136,7 +138,7 @@ function RunsheetRow({
           {timer.handover_seconds !== null && (
             <>
               <span className="text-cue-muted/40">·</span>
-              <span className="text-[#FFAA00]/80">+{timer.handover_seconds}s handover</span>
+              <span className="text-[#FFAA00]/80">{t('runsheet.handoverSuffix', { seconds: timer.handover_seconds })}</span>
             </>
           )}
         </div>
@@ -149,17 +151,17 @@ function RunsheetRow({
           type="button"
           onClick={onSkipTo}
           disabled={acting || isCurrent}
-          title="Jump to this session"
+          title={t('runsheet.jumpTitle')}
           className="rounded border border-cue-border px-2 py-1 font-mono text-[10px] tracking-widest text-cue-muted uppercase hover:border-cue-accent hover:text-cue-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-[120ms]"
         >
-          Jump
+          {t('runsheet.jump')}
         </button>
         <button
           type="button"
           onClick={onEdit}
           className="rounded border border-cue-border px-2 py-1 font-mono text-[10px] tracking-widest text-cue-muted uppercase hover:border-cue-accent hover:text-cue-accent transition-colors duration-[120ms]"
         >
-          Edit
+          {t('runsheet.edit')}
         </button>
         <button
           type="button"
@@ -167,7 +169,7 @@ function RunsheetRow({
           disabled={acting}
           className="rounded border border-[#FF2040]/40 px-2 py-1 font-mono text-[10px] tracking-widest text-[#FF2040]/80 uppercase hover:border-[#FF2040] hover:text-[#FF2040] disabled:opacity-30 transition-colors duration-[120ms]"
         >
-          Del
+          {t('runsheet.del')}
         </button>
       </div>
     </div>
@@ -175,6 +177,7 @@ function RunsheetRow({
 }
 
 export function Runsheet({ room, onMutated }: RunsheetProps) {
+  const { t } = useTranslation(['admin', 'common'])
   const api = useApi()
   const [acting, setActing] = useState(false)
   const [addingNew, setAddingNew] = useState(false)
@@ -254,10 +257,10 @@ export function Runsheet({ room, onMutated }: RunsheetProps) {
       <div className="flex items-center justify-between border-b border-cue-border px-5 py-3">
         <div>
           <h3 className="font-display text-lg leading-none tracking-wider text-cue-primary">
-            RUNSHEET
+            {t('runsheet.heading')}
           </h3>
           <p className="mt-1 font-mono text-[10px] text-cue-muted tracking-widest uppercase">
-            {room.timers.length} {room.timers.length === 1 ? 'session' : 'sessions'}
+            {t('runsheet.session', { count: room.timers.length })}
           </p>
         </div>
         <button
@@ -265,7 +268,7 @@ export function Runsheet({ room, onMutated }: RunsheetProps) {
           onClick={() => { setAddingNew(true); setEditingId(null) }}
           className="rounded border border-cue-accent px-3 py-1.5 font-display text-xs tracking-widest text-cue-accent hover:bg-cue-accent/10 transition-colors duration-[120ms]"
         >
-          + ADD SESSION
+          {t('runsheet.addSession')}
         </button>
       </div>
 
@@ -281,9 +284,9 @@ export function Runsheet({ room, onMutated }: RunsheetProps) {
 
         {room.timers.length === 0 && !addingNew && (
           <div className="rounded border border-dashed border-cue-border py-10 text-center">
-            <p className="font-display text-base tracking-wider text-cue-muted">NO SESSIONS YET</p>
+            <p className="font-display text-base tracking-wider text-cue-muted">{t('runsheet.emptyTitle')}</p>
             <p className="mt-1 font-mono text-[11px] text-cue-muted/60">
-              Add the first one with the button above.
+              {t('runsheet.emptyHint')}
             </p>
           </div>
         )}
@@ -314,7 +317,7 @@ export function Runsheet({ room, onMutated }: RunsheetProps) {
                     className="flex items-center justify-between rounded border border-[#FF2040]/40 bg-[#FF2040]/5 px-3 py-3"
                   >
                     <span className="font-mono text-sm text-[#FF2040]">
-                      Delete "{timer.session_title || timer.name}"?
+                      {t('runsheet.deleteConfirm', { name: timer.session_title || timer.name })}
                     </span>
                     <div className="flex items-center gap-2">
                       <button
@@ -323,14 +326,14 @@ export function Runsheet({ room, onMutated }: RunsheetProps) {
                         disabled={acting}
                         className="rounded border border-[#FF2040] px-2 py-1 font-mono text-xs text-[#FF2040] hover:bg-[#FF2040]/10 disabled:opacity-50 transition-colors duration-[120ms]"
                       >
-                        Confirm
+                        {t('runsheet.confirm')}
                       </button>
                       <button
                         type="button"
                         onClick={() => setConfirmDelete(null)}
                         className="rounded border border-cue-border px-2 py-1 font-mono text-xs text-cue-muted hover:border-cue-primary hover:text-cue-primary transition-colors duration-[120ms]"
                       >
-                        Cancel
+                        {t('common:cancel')}
                       </button>
                     </div>
                   </div>
