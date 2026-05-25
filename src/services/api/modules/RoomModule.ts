@@ -5,6 +5,7 @@ import type {
   RoomUpdatePayload,
   MessagePayload,
   EmergencyPayload,
+  PoiPayload,
   SkipToPayload,
   ReorderPayload,
   ModeSwitchEligibility,
@@ -70,6 +71,11 @@ export class RoomModule {
 
   async emergency(id: number, payload: EmergencyPayload): Promise<Room> {
     const { data } = await this.http.post<Room>(`${BASE}/${id}/emergency/`, payload)
+    return data
+  }
+
+  async poi(id: number, payload: PoiPayload): Promise<Room> {
+    const { data } = await this.http.post<Room>(`${BASE}/${id}/poi/`, payload)
     return data
   }
 

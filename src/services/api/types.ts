@@ -27,6 +27,17 @@ export interface Timer {
   updated_at: string
   zones: Zone[]
   zone_overrides: Zone[] | null
+  // Debate (per-speech) — overrides; null inherits the room default
+  role: string
+  poi_enabled: boolean | null
+  protected_open_seconds: number | null
+  protected_close_seconds: number | null
+  grace_seconds: number | null
+  // Debate — server-resolved effective values (read-only)
+  effective_poi_enabled: boolean
+  effective_protected_open: number
+  effective_protected_close: number
+  effective_grace: number
 }
 
 export interface Room {
@@ -53,6 +64,13 @@ export interface Room {
   message_active: boolean
   emergency_text: string
   emergency_active: boolean
+  // Debate (room-level defaults)
+  debate_enabled: boolean
+  poi_enabled: boolean
+  protected_open_seconds: number
+  protected_close_seconds: number
+  grace_seconds: number
+  poi_offered_active: boolean
   updated_at: string
   zones: Zone[]
   timers: Timer[]
@@ -80,6 +98,11 @@ export interface RoomCreatePayload {
   minimal_mode?: boolean
   auto_advance?: boolean
   handover_seconds?: number
+  debate_enabled?: boolean
+  poi_enabled?: boolean
+  protected_open_seconds?: number
+  protected_close_seconds?: number
+  grace_seconds?: number
 }
 
 export interface RoomUpdatePayload {
@@ -97,6 +120,11 @@ export interface RoomUpdatePayload {
   minimal_mode?: boolean
   auto_advance?: boolean
   handover_seconds?: number
+  debate_enabled?: boolean
+  poi_enabled?: boolean
+  protected_open_seconds?: number
+  protected_close_seconds?: number
+  grace_seconds?: number
 }
 
 export interface TimerCreatePayload {
@@ -105,6 +133,11 @@ export interface TimerCreatePayload {
   session_title?: string
   speaker_name?: string
   handover_seconds?: number | null
+  role?: string
+  poi_enabled?: boolean | null
+  protected_open_seconds?: number | null
+  protected_close_seconds?: number | null
+  grace_seconds?: number | null
 }
 
 export interface TimerUpdatePayload {
@@ -113,6 +146,11 @@ export interface TimerUpdatePayload {
   session_title?: string
   speaker_name?: string
   handover_seconds?: number | null
+  role?: string
+  poi_enabled?: boolean | null
+  protected_open_seconds?: number | null
+  protected_close_seconds?: number | null
+  grace_seconds?: number | null
 }
 
 export interface StartPayload {
@@ -138,6 +176,10 @@ export interface MoveTimerPayload {
 export interface MessagePayload {
   text?: string
   active?: boolean
+}
+
+export interface PoiPayload {
+  active: boolean
 }
 
 export interface EmergencyPayload {

@@ -66,6 +66,21 @@ html[data-theme="rehearsal"] {
     from { opacity: 0; transform: translateY(20px); }
     to   { opacity: 1; transform: translateY(0); }
   }
+  /* Brief pop replayed whenever the POI window state changes (visual "bell") */
+  @keyframes poi-flash {
+    0%   { transform: scale(1);    opacity: 0.4; }
+    35%  { transform: scale(1.08); opacity: 1;   }
+    100% { transform: scale(1);    opacity: 1;   }
+  }
+  @keyframes poi-offered-pulse {
+    0%, 100% { opacity: 1;   }
+    50%       { opacity: 0.45; }
+  }
+  /* Continuous grace-expiry indicator (visual "continuous bell") */
+  @keyframes poi-grace-pulse {
+    0%, 100% { background-color: rgba(255, 32, 64, 0.10); }
+    50%       { background-color: rgba(255, 32, 64, 0.28); }
+  }
 }
 
 @layer utilities {
@@ -77,6 +92,9 @@ html[data-theme="rehearsal"] {
   .animate-fetching       { animation: fetching-pulse       0.9s ease-in-out infinite; }
   .animate-card-in        { animation: card-in              0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
   .animate-fade-slide-up  { animation: fade-slide-up        0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .animate-poi-flash      { animation: poi-flash            0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .animate-poi-offered    { animation: poi-offered-pulse    1s   ease-in-out infinite; }
+  .animate-poi-grace      { animation: poi-grace-pulse      1.2s ease-in-out infinite; }
 }
 
 @layer components {

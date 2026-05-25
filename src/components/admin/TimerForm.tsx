@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useApi } from '../../services/api'
+import { useApi, BP_ROLES } from '../../services/api'
 import type {
   Timer,
   TimerCreatePayload,
@@ -30,6 +30,7 @@ function parseMMSS(raw: string): number | null {
 interface TimerFormProps {
   roomId: number
   initial?: Timer
+  debateEnabled?: boolean
   onSaved: (timer: Timer) => void
   onCancel: () => void
 }
@@ -40,6 +41,11 @@ interface FormState {
   speaker_name: string
   duration: number
   handover_seconds: number | null
+  role: string
+  poi_enabled: boolean | null
+  protected_open_seconds: number | null
+  protected_close_seconds: number | null
+  grace_seconds: number | null
 }
 
 function initialState(initial?: Timer): FormState {
@@ -50,6 +56,11 @@ function initialState(initial?: Timer): FormState {
       speaker_name: initial.speaker_name,
       duration: initial.duration,
       handover_seconds: initial.handover_seconds,
+      role: initial.role,
+      poi_enabled: initial.poi_enabled,
+      protected_open_seconds: initial.protected_open_seconds,
+      protected_close_seconds: initial.protected_close_seconds,
+      grace_seconds: initial.grace_seconds,
     }
   }
   return {
@@ -58,10 +69,29 @@ function initialState(initial?: Timer): FormState {
     speaker_name: '',
     duration: 300,
     handover_seconds: null,
+    role: '',
+    poi_enabled: null,
+    protected_open_seconds: null,
+    protected_close_seconds: null,
+    grace_seconds: null,
   }
 }
 
-export function TimerForm({ roomId, initial, onSaved, onCancel }: TimerFormProps) {
+// Tri-state POI override <-> select value
+function poiToSelect(value: boolean | null): string {
+  if (value === null) return ''
+  return value ? 'true' : 'false'
+}
+function selectToPoi(value: string): boolean | null {
+  if (value === '') return null
+  return value === 'true'
+}
+
+function nullableSecs(raw: string): number | null {
+  return raw === '' ? null : Math.max(0, parseInt(raw, 10) || 0)
+}
+
+export function TimerForm({ roomId, initial, debateEnabled = false, onSaved, onCancel }: TimerFormProps) {
   const api = useApi()
   const [form, setForm] = useState<FormState>(() => initialState(initial))
   const [durationInput, setDurationInput] = useState(() => formatMMSS(form.duration))
@@ -108,6 +138,13 @@ export function TimerForm({ roomId, initial, onSaved, onCancel }: TimerFormProps
           duration: parsedDuration,
           handover_seconds: form.handover_seconds,
         }
+        if (debateEnabled) {
+          payload.role = form.role
+          payload.poi_enabled = form.poi_enabled
+          payload.protected_open_seconds = form.protected_open_seconds
+          payload.protected_close_seconds = form.protected_close_seconds
+          payload.grace_seconds = form.grace_seconds
+        }
         const updated = await api.timers.patch(roomId, initial.id, payload)
         onSaved(updated)
       } else {
@@ -117,6 +154,13 @@ export function TimerForm({ roomId, initial, onSaved, onCancel }: TimerFormProps
           speaker_name: form.speaker_name || undefined,
           duration: parsedDuration,
           handover_seconds: form.handover_seconds,
+        }
+        if (debateEnabled) {
+          payload.role = form.role || undefined
+          payload.poi_enabled = form.poi_enabled
+          payload.protected_open_seconds = form.protected_open_seconds
+          payload.protected_close_seconds = form.protected_close_seconds
+          payload.grace_seconds = form.grace_seconds
         }
         const created = await api.timers.create(roomId, payload)
         onSaved(created)
@@ -206,6 +250,92 @@ export function TimerForm({ roomId, initial, onSaved, onCancel }: TimerFormProps
             className="w-full rounded border border-cue-border bg-cue-surface px-3 py-2 font-mono text-sm text-cue-primary placeholder:text-cue-muted/50 focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
           />
         </div>
+
+        {debateEnabled && (
+          <>
+            <div className="sm:col-span-2 mt-1 border-t border-cue-border pt-3">
+              <span className="font-mono text-[10px] font-semibold tracking-widest text-cue-accent uppercase">
+                Debate — Speech
+              </span>
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="mb-1 block font-mono text-xs font-medium tracking-widest text-cue-muted uppercase">
+                Role <span className="text-cue-muted/50 normal-case">(free text — suggestions below)</span>
+              </label>
+              <input
+                type="text"
+                list="bp-roles"
+                value={form.role}
+                onChange={(e) => update('role', e.target.value)}
+                placeholder="e.g. Prime Minister"
+                className="w-full rounded border border-cue-border bg-cue-surface px-3 py-2 font-mono text-sm text-cue-primary placeholder:text-cue-muted/50 focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
+              />
+              <datalist id="bp-roles">
+                {BP_ROLES.map((r) => (
+                  <option key={r} value={r} />
+                ))}
+              </datalist>
+            </div>
+
+            <div>
+              <label className="mb-1 block font-mono text-xs font-medium tracking-widest text-cue-muted uppercase">
+                POIs for this speech
+              </label>
+              <select
+                value={poiToSelect(form.poi_enabled)}
+                onChange={(e) => update('poi_enabled', selectToPoi(e.target.value))}
+                className="w-full rounded border border-cue-border bg-cue-surface px-3 py-2 font-mono text-sm text-cue-primary focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
+              >
+                <option value="">Room default</option>
+                <option value="true">Allowed</option>
+                <option value="false">Disabled</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-1 block font-mono text-xs font-medium tracking-widest text-cue-muted uppercase">
+                Grace (sec)
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={form.grace_seconds ?? ''}
+                onChange={(e) => update('grace_seconds', nullableSecs(e.target.value))}
+                placeholder="(room default)"
+                className="w-full rounded border border-cue-border bg-cue-surface px-3 py-2 font-mono text-sm text-cue-primary placeholder:text-cue-muted/50 focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block font-mono text-xs font-medium tracking-widest text-cue-muted uppercase">
+                Protected — Open (sec)
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={form.protected_open_seconds ?? ''}
+                onChange={(e) => update('protected_open_seconds', nullableSecs(e.target.value))}
+                placeholder="(room default)"
+                className="w-full rounded border border-cue-border bg-cue-surface px-3 py-2 font-mono text-sm text-cue-primary placeholder:text-cue-muted/50 focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block font-mono text-xs font-medium tracking-widest text-cue-muted uppercase">
+                Protected — Close (sec)
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={form.protected_close_seconds ?? ''}
+                onChange={(e) => update('protected_close_seconds', nullableSecs(e.target.value))}
+                placeholder="(room default)"
+                className="w-full rounded border border-cue-border bg-cue-surface px-3 py-2 font-mono text-sm text-cue-primary placeholder:text-cue-muted/50 focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {error && <p className="font-mono text-xs text-[#FF2040]">{error}</p>}

@@ -151,6 +151,17 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
     onMutated()
   }
 
+  async function handlePoi(active: boolean) {
+    setActing(true)
+    try {
+      const updated = await api.rooms.poi(room.id, { active })
+      setRoom(updated)
+      onMutated()
+    } finally {
+      setActing(false)
+    }
+  }
+
   const wsDotColor = WS_DOT[status]
   const isSchedule = room.mode === 'schedule'
 
@@ -284,6 +295,24 @@ export function RoomControls({ initialRoom, onMutated }: RoomControlsProps) {
                   </button>
                 )}
               </div>
+
+              {/* Debate: POI offered (stops the clock) */}
+              {room.debate_enabled &&
+                (current.state === 'running' || current.state === 'overtime' || current.state === 'paused') && (
+                  <button
+                    type="button"
+                    onClick={() => handlePoi(!room.poi_offered_active)}
+                    disabled={acting}
+                    className={[
+                      'w-full rounded px-3 py-2 font-display text-sm tracking-widest disabled:opacity-50 transition-colors duration-[120ms]',
+                      room.poi_offered_active
+                        ? 'bg-[#FFAA00] text-cue-base hover:bg-[#E69900]'
+                        : 'border border-[#FFAA00] text-[#FFAA00] hover:bg-[#FFAA00]/10',
+                    ].join(' ')}
+                  >
+                    {room.poi_offered_active ? '● POI LIVE — CLEAR & RESUME' : 'OFFER POI (PAUSE CLOCK)'}
+                  </button>
+                )}
 
               {/* Quick adjust + override */}
               {(current.state === 'running' || current.state === 'paused' || current.state === 'overtime') && (

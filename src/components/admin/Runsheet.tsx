@@ -119,8 +119,15 @@ function RunsheetRow({
 
       {/* Title / speaker / handover */}
       <div className="flex-1 min-w-0">
-        <div className="font-display text-base leading-none tracking-wide text-cue-primary truncate">
-          {timer.session_title || timer.name}
+        <div className="flex items-center gap-2 min-w-0">
+          {timer.role && (
+            <span className="shrink-0 rounded border border-cue-accent/40 bg-cue-accent/[0.06] px-1.5 py-0.5 font-mono text-[10px] tracking-wide text-cue-accent">
+              {timer.role}
+            </span>
+          )}
+          <span className="font-display text-base leading-none tracking-wide text-cue-primary truncate">
+            {timer.session_title || timer.name}
+          </span>
         </div>
         <div className="mt-1 flex items-center gap-2 font-mono text-[11px] text-cue-muted">
           {timer.speaker_name && <span className="truncate">{timer.speaker_name}</span>}
@@ -266,6 +273,7 @@ export function Runsheet({ room, onMutated }: RunsheetProps) {
         {addingNew && (
           <TimerForm
             roomId={room.id}
+            debateEnabled={room.debate_enabled}
             onSaved={() => { setAddingNew(false); onMutated() }}
             onCancel={() => setAddingNew(false)}
           />
@@ -292,6 +300,7 @@ export function Runsheet({ room, onMutated }: RunsheetProps) {
                     key={timer.id}
                     roomId={room.id}
                     initial={timer}
+                    debateEnabled={room.debate_enabled}
                     onSaved={() => { setEditingId(null); onMutated() }}
                     onCancel={() => setEditingId(null)}
                   />

@@ -183,6 +183,41 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
     ? '#FF2040'
     : (activeZone?.color ?? room.accent_color)
 
+  // Debate / POI window — derived client-side from the same `remainingMs`.
+  const debateActive = (room.debate_enabled ?? false) && isLive && current !== null
+  const poiOffered = debateActive && room.poi_offered_active && isPaused
+  type PoiState = 'closed' | 'open' | 'off' | 'offered'
+  let poiState: PoiState = 'closed'
+  if (debateActive && current) {
+    if (poiOffered) {
+      poiState = 'offered'
+    } else if (!current.effective_poi_enabled) {
+      poiState = 'off'
+    } else {
+      const remSecs = remainingMs / 1000
+      const openBoundary = current.duration - current.effective_protected_open
+      // opening-protected OR closing-protected windows keep POIs closed
+      poiState =
+        remSecs > openBoundary || remSecs <= current.effective_protected_close ? 'closed' : 'open'
+    }
+  }
+  const graceExpired =
+    debateActive &&
+    current !== null &&
+    isOvertime &&
+    remainingMs < -(current.effective_grace * 1000)
+
+  const poiColor =
+    poiState === 'open' ? '#00F078' : poiState === 'offered' ? '#FFAA00' : 'var(--color-cue-muted)'
+  const poiLabel =
+    poiState === 'open'
+      ? 'POIs OPEN'
+      : poiState === 'offered'
+        ? 'POI OFFERED!'
+        : poiState === 'off'
+          ? 'POIs OFF'
+          : 'POIs CLOSED'
+
   return (
     <div className="fixed inset-0 bg-cue-base">
       {/* Zone tint overlay (live + running/overtime/paused) */}
@@ -221,6 +256,7 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
             {isOvertime ? `OVERTIME | ${room.name}` : room.name}
           </span>
           {isLive && current && (
+            (debateActive && current.role) ||
             (showSessionTitle && (current.session_title || current.name)) ||
             (showSpeakerName && current.speaker_name)
           ) && (
@@ -235,8 +271,16 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
                 className="font-display tracking-wide text-cue-muted truncate"
                 style={{ fontSize: 'clamp(0.65rem, 1.7vw, 1.9rem)' }}
               >
+                {debateActive && current.role && (
+                  <span style={{ color: 'var(--color-cue-accent)' }}>{current.role}</span>
+                )}
+                {debateActive && current.role &&
+                  ((showSessionTitle && (current.session_title || current.name)) ||
+                    (showSpeakerName && current.speaker_name)) &&
+                  ' · '}
                 {showSessionTitle && (current.session_title || current.name)}
-                {showSessionTitle && showSpeakerName && current.speaker_name && ' — '}
+                {showSessionTitle && (current.session_title || current.name) &&
+                  showSpeakerName && current.speaker_name && ' — '}
                 {showSpeakerName && current.speaker_name}
               </span>
             </>
@@ -391,20 +435,35 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
           <div className="flex flex-col items-center gap-[2%]">
             <span
               className={`timer-digits animate-digit-blink${showMessageOverlay ? ' timer-digits-with-message' : ''}`}
-              style={{ color: 'var(--color-cue-primary)', opacity: 0.55 }}
+              style={{ color: poiOffered ? '#FFAA00' : 'var(--color-cue-primary)', opacity: 0.6 }}
             >
               {timerDisplay}
             </span>
-            <span
-              className="font-display tracking-[0.3em] border border-cue-muted text-cue-muted"
-              style={{
-                fontSize: 'clamp(0.8rem, 3vw, 3rem)',
-                padding: '0.3em 1.2em',
-                borderRadius: '2px',
-              }}
-            >
-              PAUSED
-            </span>
+            {poiOffered ? (
+              <span
+                className="font-display tracking-[0.3em] border animate-poi-offered"
+                style={{
+                  fontSize: 'clamp(0.8rem, 3vw, 3rem)',
+                  padding: '0.3em 1.2em',
+                  borderRadius: '2px',
+                  color: '#FFAA00',
+                  borderColor: '#FFAA00',
+                }}
+              >
+                POI OFFERED
+              </span>
+            ) : (
+              <span
+                className="font-display tracking-[0.3em] border border-cue-muted text-cue-muted"
+                style={{
+                  fontSize: 'clamp(0.8rem, 3vw, 3rem)',
+                  padding: '0.3em 1.2em',
+                  borderRadius: '2px',
+                }}
+              >
+                PAUSED
+              </span>
+            )}
           </div>
         )}
 
@@ -464,8 +523,8 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
         </div>
       )}
 
-      {/* Bottom strip */}
-      {showBottomStrip && (
+      {/* Bottom strip — standard */}
+      {showBottomStrip && !debateActive && (
       <div className="bottom-strip flex items-center justify-center bg-cue-surface/90 border-t border-cue-border">
         <span
           className="font-display tracking-[0.3em]"
@@ -477,6 +536,41 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
         >
           {isOvertime ? 'SESSION ENDED' : isComplete ? 'EVENT COMPLETE' : isHandover ? 'HANDOVER' : 'VENUE TIMER'}
         </span>
+      </div>
+      )}
+
+      {/* Bottom strip — debate (POI status + role) */}
+      {showBottomStrip && debateActive && current && (
+      <div
+        className={`bottom-strip flex items-center justify-between bg-cue-surface/90 border-t px-[3%]${graceExpired ? ' animate-poi-grace' : ''}`}
+        style={{ borderTopColor: graceExpired ? '#FF2040' : 'var(--color-cue-border)' }}
+      >
+        <span
+          key={poiState}
+          className={`animate-poi-flash flex items-center gap-[1em] font-display tracking-[0.2em]${poiState === 'offered' ? ' animate-poi-offered' : ''}`}
+          style={{ fontSize: 'clamp(0.7rem, 2.2vw, 2.2rem)', color: poiColor }}
+        >
+          <span
+            className="rounded-full shrink-0"
+            style={{
+              width: '0.6em',
+              height: '0.6em',
+              backgroundColor: poiColor,
+              boxShadow: poiState === 'closed' || poiState === 'off' ? 'none' : `0 0 0.5em ${poiColor}`,
+            }}
+          />
+          {poiLabel}
+        </span>
+        {(current.role || (showSpeakerName && current.speaker_name)) && (
+          <span
+            className="font-display tracking-wide text-cue-muted truncate ml-[3%]"
+            style={{ fontSize: 'clamp(0.6rem, 1.8vw, 1.8rem)' }}
+          >
+            {current.role}
+            {current.role && showSpeakerName && current.speaker_name && ' · '}
+            {showSpeakerName && current.speaker_name}
+          </span>
+        )}
       </div>
       )}
     </div>

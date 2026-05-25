@@ -1,5 +1,6 @@
 export { ApiProvider, useApi } from './ApiContext.tsx'
 export { ApiClient } from './ApiClient.ts'
+export { BP_ROLES } from './debate.ts'
 export type {
   Room,
   RoomState,
@@ -20,6 +21,7 @@ export type {
   MoveTimerPayload,
   MessagePayload,
   EmergencyPayload,
+  PoiPayload,
   SkipToPayload,
   ReorderPayload,
   ZoneCreatePayload,

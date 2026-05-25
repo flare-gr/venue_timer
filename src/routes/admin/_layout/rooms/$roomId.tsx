@@ -216,6 +216,11 @@ function RoomSettings({ room, onMutated, onDelete }: SettingsProps) {
   const [autoAdvance, setAutoAdvance] = useState(room.auto_advance)
   const [handoverSeconds, setHandoverSeconds] = useState(String(room.handover_seconds))
   const [mode, setMode] = useState<RoomMode>(room.mode)
+  const [debateEnabled, setDebateEnabled] = useState(room.debate_enabled)
+  const [poiEnabled, setPoiEnabled] = useState(room.poi_enabled)
+  const [protectedOpen, setProtectedOpen] = useState(String(room.protected_open_seconds))
+  const [protectedClose, setProtectedClose] = useState(String(room.protected_close_seconds))
+  const [graceSeconds, setGraceSeconds] = useState(String(room.grace_seconds))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -239,6 +244,13 @@ function RoomSettings({ room, onMutated, onDelete }: SettingsProps) {
         auto_advance: autoAdvance,
         handover_seconds: parseInt(handoverSeconds, 10) || 0,
         mode,
+      }
+      if (mode === 'schedule') {
+        payload.debate_enabled = debateEnabled
+        payload.poi_enabled = poiEnabled
+        payload.protected_open_seconds = parseInt(protectedOpen, 10) || 0
+        payload.protected_close_seconds = parseInt(protectedClose, 10) || 0
+        payload.grace_seconds = parseInt(graceSeconds, 10) || 0
       }
       await api.rooms.patch(room.id, payload)
       onMutated()
@@ -347,6 +359,73 @@ function RoomSettings({ room, onMutated, onDelete }: SettingsProps) {
           </>
         )}
       </div>
+
+      {/* Debate mode (schedule only) */}
+      {mode === 'schedule' && (
+        <div className="border-t border-cue-border px-5 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="font-mono text-xs font-medium tracking-widest text-cue-primary uppercase">
+                Debate Mode
+              </span>
+              <span className="font-mono text-[10px] text-cue-muted">
+                British Parliamentary — POIs, protected time, bells.
+              </span>
+            </div>
+            <Toggle checked={debateEnabled} onChange={setDebateEnabled} label="Toggle debate mode" />
+          </div>
+
+          {debateEnabled && (
+            <>
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="POIs Allowed">
+                  <div className="flex items-center gap-3 py-2">
+                    <Toggle checked={poiEnabled} onChange={setPoiEnabled} label="POIs allowed" />
+                    <span className="font-mono text-xs text-cue-muted">
+                      Points of Information permitted
+                    </span>
+                  </div>
+                </Field>
+
+                <Field label="Grace (sec)">
+                  <input
+                    type="number"
+                    min="0"
+                    value={graceSeconds}
+                    onChange={(e) => setGraceSeconds(e.target.value)}
+                    className="w-full rounded border border-cue-border bg-cue-base px-3 py-2 font-mono text-sm text-cue-primary focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
+                  />
+                </Field>
+
+                <Field label="Protected — Open (sec)">
+                  <input
+                    type="number"
+                    min="0"
+                    value={protectedOpen}
+                    onChange={(e) => setProtectedOpen(e.target.value)}
+                    className="w-full rounded border border-cue-border bg-cue-base px-3 py-2 font-mono text-sm text-cue-primary focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
+                  />
+                </Field>
+
+                <Field label="Protected — Close (sec)">
+                  <input
+                    type="number"
+                    min="0"
+                    value={protectedClose}
+                    onChange={(e) => setProtectedClose(e.target.value)}
+                    className="w-full rounded border border-cue-border bg-cue-base px-3 py-2 font-mono text-sm text-cue-primary focus:border-cue-accent focus:outline-none transition-colors duration-[120ms]"
+                  />
+                </Field>
+              </div>
+              {autoAdvance && (
+                <p className="mt-3 font-mono text-[10px] text-[#FFAA00]">
+                  Tip: debates usually run with Auto-advance off so the chair advances each speech manually.
+                </p>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       {error && (
         <p className="px-5 pb-2 font-mono text-xs text-[#FF2040]">{error}</p>
