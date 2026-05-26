@@ -187,6 +187,10 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
     ? '#FF2040'
     : (activeZone?.color ?? room.accent_color)
 
+  const hasMultipleSessions = room.timers.length > 1
+  const activeSpeakerLabel = current ? (current.session_title || current.name) : ''
+  const showActiveSpeaker = (isRunningOrOvertime || isPaused) && hasMultipleSessions && activeSpeakerLabel !== ''
+
   // Debate / POI window — derived client-side from the same `remainingMs`.
   const debateActive = (room.debate_enabled ?? false) && isLive && current !== null
   const poiOffered = debateActive && room.poi_offered_active && isPaused
@@ -251,7 +255,7 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
             />
           )}
           <span
-            className="font-display leading-none tracking-widest truncate"
+            className="font-display leading-none tracking-widest whitespace-nowrap shrink-0"
             style={{
               fontSize: 'clamp(0.7rem, 1.5vw, 1.6rem)',
               color: isOvertime ? '#FF2040' : 'var(--color-cue-primary)',
@@ -398,7 +402,7 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
               className="font-display leading-none tracking-wide text-cue-primary text-center"
               style={{ fontSize: 'clamp(1.6rem, 5.5vw, 6rem)' }}
             >
-              {showSessionTitle ? (current.session_title || current.name) : current.name}
+              {current.session_title || current.name}
             </span>
             {current.speaker_name && showSpeakerName && (
               <span
@@ -496,7 +500,7 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
               className="font-display leading-none tracking-wide text-cue-primary text-center"
               style={{ fontSize: 'clamp(1.6rem, 4.5vw, 5rem)' }}
             >
-              {showSessionTitle ? (current.session_title || current.name) : current.name}
+              {current.session_title || current.name}
             </span>
             <span
               className="font-mono tabular-nums text-cue-muted"
@@ -529,7 +533,7 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
 
       {/* Bottom strip — standard */}
       {showBottomStrip && !debateActive && (
-      <div className="bottom-strip flex items-center justify-center bg-cue-surface/90 border-t border-cue-border">
+      <div className="bottom-strip flex items-center justify-center bg-cue-surface/90 border-t border-cue-border px-[3%]">
         <span
           className="font-display tracking-[0.3em]"
           style={{
@@ -540,6 +544,16 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
         >
           {isOvertime ? t('sessionEnded') : isComplete ? t('eventComplete') : isHandover ? t('handover') : t('venueTimer')}
         </span>
+        {showActiveSpeaker && (
+          <span className="absolute right-[3%] top-0 bottom-0 flex items-center max-w-[45%]">
+            <span
+              className="font-display tracking-wide text-cue-muted truncate"
+              style={{ fontSize: 'clamp(0.55rem, 1.15vw, 1.2rem)' }}
+            >
+              {activeSpeakerLabel}
+            </span>
+          </span>
+        )}
       </div>
       )}
 
@@ -565,14 +579,16 @@ export function TimerDisplay({ roomId }: TimerDisplayProps) {
           />
           {poiLabel}
         </span>
-        {(current.role || (showSpeakerName && current.speaker_name)) && (
+        {showActiveSpeaker && (
           <span
             className="font-display tracking-wide text-cue-muted truncate ml-[3%]"
             style={{ fontSize: 'clamp(0.55rem, 1.15vw, 1.2rem)' }}
           >
-            {current.role}
-            {current.role && showSpeakerName && current.speaker_name && ' · '}
-            {showSpeakerName && current.speaker_name}
+            {current.role && (
+              <span style={{ color: 'var(--color-cue-accent)' }}>{current.role}</span>
+            )}
+            {current.role && ' · '}
+            {activeSpeakerLabel}
           </span>
         )}
       </div>
