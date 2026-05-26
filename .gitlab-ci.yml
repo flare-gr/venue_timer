@@ -1,0 +1,37 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  IMAGE_NAME: "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+
+before_script:
+  - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+
+Build Image:
+  stage: build
+  only:
+    - master
+  tags:
+    - deploy-freya
+  variables:
+    FF_ENABLE_JOB_CLEANUP: "true"
+  script:
+    # Build the img.
+    - cat ${ENV_PRODUCTION} > .env
+    - docker compose build
+    - docker compose push
+
+Deploy Production:
+  stage: deploy
+  only:
+    - master  # Deploy only on the main branch
+  tags:
+    - deploy-freya
+  script:
+    - docker compose down || true
+    - docker compose pull
+    - docker compose up -d
+
+after_script:
+  - docker logout "$CI_REGISTRY"
