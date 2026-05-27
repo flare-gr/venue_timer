@@ -2,6 +2,9 @@
 
 **A real-time stage timer for live events.**
 
+> **Alpha software.** This project is under active development. APIs, data models, and
+> configuration may change without notice between commits. Use in production at your own risk.
+
 Venue and Debate Timer is a purpose-built event-timing platform for the real demands of live shows.
 It runs multiple rooms at the same time — each with its own schedule, its own speakers,
 and its own look — and pushes every change to the screens in the room the instant it
@@ -70,10 +73,47 @@ npm run lint     # ESLint
 
 The Django backend must be running at `VITE_API_BASE_URL` for any feature to work.
 
+## Deployment
+
+The app ships as a container: a multi-stage Docker build compiles the frontend with
+`node:24-alpine` (`npm run build`) and serves the static `dist/` from `nginx:alpine`.
+The bundled `nginx.conf` handles SPA-route fallback, gzip, long-lived immutable caching
+for hashed assets, and exposes a `/health` endpoint for liveness checks.
+
+> **Build-time env.** Vite bakes `VITE_*` variables into the bundle at build time, so a
+> `.env` file (see the variables in [Getting started](#getting-started)) must be present
+> in the build context *before* the image is built — setting them at container runtime
+> has no effect.
+
+### Run with Docker locally
+
+```bash
+# Using docker compose (binds to localhost only, on port 8181)
+docker compose up --build
+
+# …or build and run the image directly
+docker build -t venue-timer .
+docker run --rm -p 8181:80 venue-timer
+```
+
+The app is then served at `http://127.0.0.1:8181`
+
+### Continuous deployment (GitLab CI/CD)
+
+`.gitlab-ci.yml` defines a build → deploy pipeline that runs on pushes to `master` (only)
+on the self-hosted `deploy-freya` runner. It builds and pushes the image to
+`git.flare.gr:5050/venue-timer/venue-timer:latest`, then redeploys it with
+`docker compose`.
+
+Production environment values are injected from the `ENV_PRODUCTION` CI/CD **file
+variable** (GitLab project → *Settings → CI/CD → Variables*), which the pipeline writes to
+`.env` before building. Populate it with the production `VITE_API_BASE_URL` and
+`VITE_WS_BASE_URL`.
+
 ## License
 
-Released as open source — free for any organiser, anywhere in the world, to use. The
-specific license is being finalized; see the `LICENSE` file (forthcoming).
+Released under the [GNU General Public License v3.0](LICENSE.md) — free for any
+organiser, anywhere in the world, to use, modify, and redistribute under the same terms.
 
 ## Credits
 
