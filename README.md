@@ -98,18 +98,6 @@ docker run --rm -p 8181:80 venue-timer
 
 The app is then served at `http://127.0.0.1:8181`
 
-### Continuous deployment (GitLab CI/CD)
-
-`.gitlab-ci.yml` defines a build → deploy pipeline that runs on pushes to `master` (only)
-on the self-hosted `deploy-freya` runner. It builds and pushes the image to
-`git.flare.gr:5050/venue-timer/venue-timer:latest`, then redeploys it with
-`docker compose`.
-
-Production environment values are injected from the `ENV_PRODUCTION` CI/CD **file
-variable** (GitLab project → *Settings → CI/CD → Variables*), which the pipeline writes to
-`.env` before building. Populate it with the production `VITE_API_BASE_URL` and
-`VITE_WS_BASE_URL`.
-
 ## License
 
 Released under the [GNU General Public License v3.0](LICENSE.md) — free for any
