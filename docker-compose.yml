@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     image: git.flare.gr:5050/venue-timer/venue-timer:latest
     ports:
-      - "127.0.0.1:8181:80"
+      - "127.0.0.1:8989:80"
     environment:
       - NODE_ENV=production
     restart: unless-stopped
